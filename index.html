@@ -311,47 +311,53 @@
                                 <div id="sim-too-expensive-badge" class="badge badge-success">Valid Operation (&le; 39 levels)</div>
                             </div>
 
-                            <div class="breakdown-grid">
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Target Prior Work Penalty:</span>
-                                    <span id="calc-target-pwp" class="breakdown-value">0 levels</span>
+                            <div class="anvil-results-row">
+                                <!-- Column 1: Cost Breakdown -->
+                                <div class="breakdown-grid">
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Target Prior Work Penalty:</span>
+                                        <span id="calc-target-pwp" class="breakdown-value">0 levels</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Sacrifice Prior Work Penalty:</span>
+                                        <span id="calc-sacrifice-pwp" class="breakdown-value">0 levels</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Enchantment Transfer Costs:</span>
+                                        <span id="calc-enchant-cost" class="breakdown-value">0 levels</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Incompatible Penalty Cost:</span>
+                                        <span id="calc-incompatible-cost" class="breakdown-value">0 levels</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Repair / Rename Cost:</span>
+                                        <span id="calc-repair-rename-cost" class="breakdown-value">0 levels</span>
+                                    </div>
                                 </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Sacrifice Prior Work Penalty:</span>
-                                    <span id="calc-sacrifice-pwp" class="breakdown-value">0 levels</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Enchantment Transfer Costs:</span>
-                                    <span id="calc-enchant-cost" class="breakdown-value">0 levels</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Incompatible Penalty Cost:</span>
-                                    <span id="calc-incompatible-cost" class="breakdown-value">0 levels</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Repair / Rename Cost:</span>
-                                    <span id="calc-repair-rename-cost" class="breakdown-value">0 levels</span>
-                                </div>
-                                <div class="breakdown-item total-item">
-                                    <span class="breakdown-label">TOTAL ANVIL LEVEL COST:</span>
-                                    <span id="calc-total-cost" class="breakdown-value highlight-emerald">0 Levels</span>
-                                </div>
-                            </div>
 
-                            <div class="resulting-item-box">
-                                <h4>Resulting Item State:</h4>
-                                <div class="result-stats">
-                                    <div class="stat">
-                                        <span class="stat-name">New Anvil Uses Count (N):</span>
-                                        <span id="res-anvil-uses" class="stat-val">1 use</span>
-                                    </div>
-                                    <div class="stat">
-                                        <span class="stat-name">New Prior Work Penalty:</span>
-                                        <span id="res-pwp" class="stat-val">1 level (2<sup>1</sup> - 1)</span>
-                                    </div>
-                                    <div class="stat">
-                                        <span class="stat-name">Enchantments Transferred:</span>
-                                        <span id="res-enchants-list" class="stat-val">None</span>
+                                <!-- Column 2: Total Cost -->
+                                <div class="breakdown-item total-item">
+                                    <span class="breakdown-label">Total Anvil Cost</span>
+                                    <span id="calc-total-cost" class="breakdown-value highlight-emerald">0 Lvl</span>
+                                </div>
+
+                                <!-- Column 3: Resulting Item State -->
+                                <div class="resulting-item-box">
+                                    <h4>Resulting Item State:</h4>
+                                    <div class="result-stats">
+                                        <div class="stat">
+                                            <span class="stat-name">New Anvil Uses (N):</span>
+                                            <span id="res-anvil-uses" class="stat-val">1 use</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-name">New PWP:</span>
+                                            <span id="res-pwp" class="stat-val">1 level (2<sup>1</sup> - 1)</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-name">Enchantments:</span>
+                                            <span id="res-enchants-list" class="stat-val">None</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
