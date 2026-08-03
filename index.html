@@ -247,9 +247,9 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="sim-target-uses">Previous Anvil Uses ($N_{\text{target}}$):</label>
+                                    <label for="sim-target-uses">Previous Anvil Uses (N<sub>target</sub>):</label>
                                     <input type="number" id="sim-target-uses" class="form-control" min="0" max="10" value="0">
-                                    <small class="form-hint">Penalty = $2^N - 1$ levels</small>
+                                    <small class="form-hint">Penalty = 2<sup>N</sup> - 1 levels</small>
                                 </div>
                                 <div class="form-group">
                                     <label>Enchantments on Target Item:</label>
@@ -290,9 +290,9 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="sim-sacrifice-uses">Previous Anvil Uses ($N_{\text{sacrifice}}$):</label>
+                                    <label for="sim-sacrifice-uses">Previous Anvil Uses (N<sub>sacrifice</sub>):</label>
                                     <input type="number" id="sim-sacrifice-uses" class="form-control" min="0" max="10" value="0">
-                                    <small class="form-hint">Penalty = $2^N - 1$ levels</small>
+                                    <small class="form-hint">Penalty = 2<sup>N</sup> - 1 levels</small>
                                 </div>
                                 <div class="form-group">
                                     <label>Enchantments on Sacrifice Item:</label>
@@ -342,12 +342,12 @@
                                 <h4>Resulting Item State:</h4>
                                 <div class="result-stats">
                                     <div class="stat">
-                                        <span class="stat-name">New Anvil Uses Count ($N$):</span>
+                                        <span class="stat-name">New Anvil Uses Count (N):</span>
                                         <span id="res-anvil-uses" class="stat-val">1 use</span>
                                     </div>
                                     <div class="stat">
                                         <span class="stat-name">New Prior Work Penalty:</span>
-                                        <span id="res-pwp" class="stat-val">1 level ($2^1 - 1$)</span>
+                                        <span id="res-pwp" class="stat-val">1 level (2<sup>1</sup> - 1)</span>
                                     </div>
                                     <div class="stat">
                                         <span class="stat-name">Enchantments Transferred:</span>
@@ -367,15 +367,15 @@
                     <div class="card">
                         <div class="card-header">
                             <h2>Prior Work Penalty (PWP) Scaling Table</h2>
-                            <span class="badge">Formula: $2^N - 1$</span>
+                            <span class="badge">Formula: 2<sup>N</sup> - 1</span>
                         </div>
                         <div class="card-body">
-                            <p class="card-intro">Each time an item is modified in an anvil, its internal <strong>Anvil Use Count</strong> increases by 1. When combining two items, the new item takes $\max(N_A, N_B) + 1$.</p>
+                            <p class="card-intro">Each time an item is modified in an anvil, its internal <strong>Anvil Use Count</strong> increases by 1. When combining two items, the new item takes max(N<sub>A</sub>, N<sub>B</sub>) + 1.</p>
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Anvil Uses ($N$)</th>
-                                        <th>PWP Level Cost ($2^N - 1$)</th>
+                                        <th>Anvil Uses (N)</th>
+                                        <th>PWP Level Cost (2<sup>N</sup> - 1)</th>
                                         <th>Base Status</th>
                                         <th>Modifiable?</th>
                                     </tr>
@@ -444,7 +444,7 @@
                             <span class="badge badge-info">Official Wiki Weights</span>
                         </div>
                         <div class="card-body">
-                            <p class="card-intro">Enchantment cost on the anvil equals $\text{Enchantment Level} \times \text{Multiplier}$. Books have <strong>half</strong> the multiplier of items!</p>
+                            <p class="card-intro">Enchantment cost on the anvil equals <strong>Enchantment Level &times; Multiplier</strong>. Books have <strong>half</strong> the multiplier of items!</p>
                             <div class="search-filter-box">
                                 <input type="text" id="inspector-search" class="form-control" placeholder="🔍 Search enchantment (e.g. Sharpness, Wind Burst, Mending)...">
                             </div>
@@ -482,16 +482,16 @@
                             <div class="xp-form-card">
                                 <h3>Level & XP Points Converter</h3>
                                 <div class="form-group">
-                                    <label for="xp-start-level">Starting Level ($L_{\text{start}}$):</label>
+                                    <label for="xp-start-level">Starting Level (L<sub>start</sub>):</label>
                                     <input type="number" id="xp-start-level" class="form-control" min="0" max="500" value="0">
                                 </div>
                                 <div class="form-group">
-                                    <label for="xp-target-level">Target Level ($L_{\text{target}}$):</label>
+                                    <label for="xp-target-level">Target Level (L<sub>target</sub>):</label>
                                     <input type="number" id="xp-target-level" class="form-control" min="0" max="500" value="30">
                                 </div>
                                 <div class="xp-results-box">
                                     <div class="xp-metric">
-                                        <span class="xp-metric-label">XP Points Needed ($L_{\text{start}} \rightarrow L_{\text{target}}$):</span>
+                                        <span class="xp-metric-label">XP Points Needed (L<sub>start</sub> &rarr; L<sub>target</sub>):</span>
                                         <span id="xp-diff-points" class="xp-metric-val highlight-emerald">1,395 XP</span>
                                     </div>
                                     <div class="xp-metric">
@@ -553,7 +553,7 @@
                     <input type="text" id="modal-book-name" class="form-control" placeholder="e.g. Book 1: Protection IV + Mending">
                 </div>
                 <div class="form-group">
-                    <label for="modal-book-uses">Previous Anvil Uses ($N$):</label>
+                    <label for="modal-book-uses">Previous Anvil Uses (N):</label>
                     <select id="modal-book-uses" class="form-control">
                         <option value="0" selected>0 uses (Penalty: 0 levels)</option>
                         <option value="1">1 use (Penalty: 1 level)</option>
