@@ -73,6 +73,28 @@ const INCOMPATIBILITY_GROUPS = {
     }
 };
 
+const RECOMMENDED_GOD_GEAR_BUILDS = {
+    boots: ['protection', 'feather_falling', 'depth_strider', 'soul_speed', 'unbreaking', 'mending', 'thorns'],
+    helmet: ['protection', 'respiration', 'aqua_affinity', 'unbreaking', 'mending', 'thorns'],
+    chestplate: ['protection', 'unbreaking', 'mending', 'thorns'],
+    leggings: ['protection', 'swift_sneak', 'unbreaking', 'mending', 'thorns'],
+    elytra: ['unbreaking', 'mending'],
+    sword: ['sharpness', 'looting', 'sweeping_edge', 'fire_aspect', 'unbreaking', 'mending'],
+    mace: ['density', 'wind_burst', 'fire_aspect', 'unbreaking', 'mending'],
+    bow: ['power', 'flame', 'punch', 'infinity', 'unbreaking'],
+    crossbow: ['quick_charge', 'multishot', 'unbreaking', 'mending'],
+    trident: ['impaling', 'loyalty', 'channeling', 'unbreaking', 'mending'],
+    axe: ['efficiency', 'sharpness', 'fortune', 'unbreaking', 'mending'],
+    pickaxe: ['efficiency', 'fortune', 'unbreaking', 'mending'],
+    shovel: ['efficiency', 'silk_touch', 'unbreaking', 'mending'],
+    hoe: ['efficiency', 'fortune', 'unbreaking', 'mending'],
+    fishing_rod: ['luck_of_the_sea', 'lure', 'unbreaking', 'mending'],
+    shield: ['unbreaking', 'mending'],
+    flint_and_steel: ['unbreaking', 'mending'],
+    shears: ['efficiency', 'unbreaking', 'mending'],
+    brush: ['unbreaking', 'mending']
+};
+
 const ENCHANTMENTS_DB = [
     // Armor Enchantments
     { id: 'protection', name: 'Protection', maxLevel: 4, bookMultiplier: 1, itemMultiplier: 2, group: 'armor_protection', categories: ['helmet', 'chestplate', 'leggings', 'boots'] },
@@ -567,7 +589,6 @@ function initOptimizerTab() {
     // Conflict Checking in Standard Mode
     function updateConflictingEnchantmentsUI() {
         if (ignoreIncompCheckbox.checked) {
-            // Remove disabled conflicts
             enchantListContainer.querySelectorAll('.enchantment-option-card').forEach(card => {
                 card.classList.remove('disabled-conflict');
                 const cb = card.querySelector('.opt-ench-checkbox');
@@ -585,7 +606,7 @@ function initOptimizerTab() {
             const cb = card.querySelector('.opt-ench-checkbox');
             const id = cb.getAttribute('data-id');
 
-            if (cb.checked) return; // Keep selected box enabled
+            if (cb.checked) return;
 
             let conflictingSelectedId = null;
             for (const selId of selectedIds) {
@@ -635,7 +656,7 @@ function initOptimizerTab() {
                 </div>
                 ${ench.maxLevel > 1 ? `
                     <select class="form-control enchant-level-select opt-ench-level" data-id="${ench.id}">
-                        ${Array.from({length: ench.maxLevel}, (_, i) => `<option value="${i+1}">${toRoman(i+1)}</option>`).join('')}
+                        ${Array.from({length: ench.maxLevel}, (_, i) => `<option value="${i+1}" ${i+1 === ench.maxLevel ? 'selected' : ''}>${toRoman(i+1)}</option>`).join('')}
                     </select>
                 ` : `<span class="badge badge-accent single-level-badge" data-id="${ench.id}">Level I</span>`}
             `;
@@ -650,9 +671,26 @@ function initOptimizerTab() {
     itemTypeSelect.addEventListener('change', populateEnchantments);
     populateEnchantments(); // Initial populate
 
+    // Select Max Recommended Build (Non-conflicting Meta God Gear)
     selectAllBtn.addEventListener('click', () => {
-        const checkboxes = enchantListContainer.querySelectorAll('.opt-ench-checkbox:not(:disabled)');
-        checkboxes.forEach(cb => { cb.checked = true; });
+        const selectedCategory = itemTypeSelect.value;
+        const recommendedIds = RECOMMENDED_GOD_GEAR_BUILDS[selectedCategory] || [];
+
+        enchantListContainer.querySelectorAll('.opt-ench-checkbox').forEach(cb => {
+            const id = cb.getAttribute('data-id');
+            const levelSelect = enchantListContainer.querySelector(`.opt-ench-level[data-id="${id}"]`);
+            const ench = ENCHANT_MAP.get(id);
+
+            if (recommendedIds.includes(id)) {
+                cb.checked = true;
+                if (levelSelect && ench) {
+                    levelSelect.value = ench.maxLevel;
+                }
+            } else {
+                cb.checked = false;
+            }
+        });
+
         updateConflictingEnchantmentsUI();
     });
 
@@ -675,18 +713,33 @@ function initOptimizerTab() {
         modal.classList.add('hidden');
     }
 
-    function addModalEnchantRow(defaultId = 'protection', defaultLevel = 1) {
+    function addModalEnchantRow(defaultId = 'protection', defaultLevel = null) {
         const row = document.createElement('div');
         row.className = 'sim-enchant-row';
+        const initialEnch = ENCHANT_MAP.get(defaultId) || ENCHANTMENTS_DB[0];
+        const selectedLvl = defaultLevel !== null ? defaultLevel : initialEnch.maxLevel;
+
         row.innerHTML = `
             <select class="form-control modal-ench-select">
                 ${ENCHANTMENTS_DB.map(e => `<option value="${e.id}" ${e.id === defaultId ? 'selected' : ''}>${e.name}</option>`).join('')}
             </select>
             <select class="form-control modal-level-select" style="width: 80px;">
-                ${[1, 2, 3, 4, 5].map(l => `<option value="${l}" ${l === defaultLevel ? 'selected' : ''}>${toRoman(l)}</option>`).join('')}
+                ${Array.from({ length: initialEnch.maxLevel }, (_, i) => `<option value="${i + 1}" ${i + 1 === selectedLvl ? 'selected' : ''}>${toRoman(i + 1)}</option>`).join('')}
             </select>
             <button type="button" class="btn-remove-row">&times;</button>
         `;
+
+        const enchSelect = row.querySelector('.modal-ench-select');
+        const levelSelect = row.querySelector('.modal-level-select');
+
+        enchSelect.addEventListener('change', () => {
+            const ench = ENCHANT_MAP.get(enchSelect.value);
+            if (ench) {
+                levelSelect.innerHTML = Array.from({ length: ench.maxLevel }, (_, i) => `<option value="${i + 1}" ${i + 1 === ench.maxLevel ? 'selected' : ''}>${toRoman(i + 1)}</option>`).join('');
+                levelSelect.value = ench.maxLevel;
+            }
+        });
+
         row.querySelector('.btn-remove-row').addEventListener('click', () => row.remove());
         modalEnchBuilder.appendChild(row);
     }
@@ -725,7 +778,7 @@ function initOptimizerTab() {
             card.className = 'custom-book-card';
 
             const enchTags = Object.entries(book.enchantments)
-                .map(([id, lvl]) => `<span class="enchant-tag">${ENCHANT_MAP.get(id)?.name || id} ${toRoman(lvl)}</span>`)
+                .map(([id, lvl]) => `<span class="enchant-tag">${formatEnchantmentDisplay(id, lvl)}</span>`)
                 .join(' ');
 
             card.innerHTML = `
@@ -767,7 +820,7 @@ function initOptimizerTab() {
                 checkboxes.forEach(cb => {
                     const id = cb.getAttribute('data-id');
                     const levelSelect = enchantListContainer.querySelector(`.opt-ench-level[data-id="${id}"]`);
-                    const level = parseInt(levelSelect.value, 10) || 1;
+                    const level = levelSelect ? (parseInt(levelSelect.value, 10) || 1) : (ENCHANT_MAP.get(id)?.maxLevel || 1);
                     desiredEnchantments.push({ id, level });
                 });
 
@@ -854,7 +907,7 @@ function renderOptimizerSolution(solution) {
         card.className = `step-card ${step.cost > 30 ? 'warning-step' : ''}`;
 
         const enchantmentsSummary = Object.entries(step.resultingEnchantments)
-            .map(([id, lvl]) => `${ENCHANT_MAP.get(id)?.name || id} ${toRoman(lvl)}`)
+            .map(([id, lvl]) => formatEnchantmentDisplay(id, lvl))
             .join(', ');
 
         card.innerHTML = `
@@ -896,33 +949,48 @@ function initSimulatorTab() {
     });
 
     // Add 1 default enchantment row to each for demo
-    addSimEnchantRow('sim-target-enchantments', 'sharpness', 4);
+    addSimEnchantRow('sim-target-enchantments', 'sharpness', 5);
     addSimEnchantRow('sim-sacrifice-enchantments', 'unbreaking', 3);
 
     updateSimulator();
 }
 
-function addSimEnchantRow(containerId, defaultId = 'protection', defaultLevel = 1) {
+function addSimEnchantRow(containerId, defaultId = 'protection', defaultLevel = null) {
     const container = document.getElementById(containerId);
     const row = document.createElement('div');
     row.className = 'sim-enchant-row';
+
+    const initialEnch = ENCHANT_MAP.get(defaultId) || ENCHANTMENTS_DB[0];
+    const selectedLvl = defaultLevel !== null ? defaultLevel : initialEnch.maxLevel;
 
     row.innerHTML = `
         <select class="form-control sim-ench-select">
             ${ENCHANTMENTS_DB.map(e => `<option value="${e.id}" ${e.id === defaultId ? 'selected' : ''}>${e.name}</option>`).join('')}
         </select>
         <select class="form-control sim-level-select" style="width: 80px;">
-            ${[1, 2, 3, 4, 5].map(l => `<option value="${l}" ${l === defaultLevel ? 'selected' : ''}>${toRoman(l)}</option>`).join('')}
+            ${Array.from({ length: initialEnch.maxLevel }, (_, i) => `<option value="${i + 1}" ${i + 1 === selectedLvl ? 'selected' : ''}>${toRoman(i + 1)}</option>`).join('')}
         </select>
         <button type="button" class="btn-remove-row">&times;</button>
     `;
+
+    const enchSelect = row.querySelector('.sim-ench-select');
+    const levelSelect = row.querySelector('.sim-level-select');
+
+    enchSelect.addEventListener('change', () => {
+        const ench = ENCHANT_MAP.get(enchSelect.value);
+        if (ench) {
+            levelSelect.innerHTML = Array.from({ length: ench.maxLevel }, (_, i) => `<option value="${i + 1}" ${i + 1 === ench.maxLevel ? 'selected' : ''}>${toRoman(i + 1)}</option>`).join('');
+            levelSelect.value = ench.maxLevel;
+        }
+        updateSimulator();
+    });
 
     row.querySelector('.btn-remove-row').addEventListener('click', () => {
         row.remove();
         updateSimulator();
     });
 
-    row.querySelectorAll('select').forEach(s => s.addEventListener('change', updateSimulator));
+    levelSelect.addEventListener('change', updateSimulator);
 
     container.appendChild(row);
     updateSimulator();
