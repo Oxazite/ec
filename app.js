@@ -164,6 +164,8 @@ function areEnchantmentsIncompatible(idA, idB) {
     return false;
 }
 
+
+
 /**
  * Calculates single anvil operation cost between target and sacrifice items.
  */
@@ -173,7 +175,8 @@ function calculateAnvilStep({
     edition = 'java',
     isRename = false,
     materialRepairCount = 0,
-    isItemRepair = false
+    isItemRepair = false,
+    ignoreIncompatibility = false
 }) {
     const targetPWP = getPWP(targetItem.anvilUses);
     const sacrificePWP = getPWP(sacrificeItem.anvilUses);
@@ -190,14 +193,15 @@ function calculateAnvilStep({
         const enchInfo = ENCHANT_MAP.get(enchId);
         if (!enchInfo) continue;
 
-        // Check compatibility with existing target enchantments
-        const targetExistingIds = Object.keys(resultingEnchantments);
+        // Check compatibility with existing target enchantments unless ignoreIncompatibility is true
         let isIncompatible = false;
-
-        for (const targetId of targetExistingIds) {
-            if (areEnchantmentsIncompatible(enchId, targetId)) {
-                isIncompatible = true;
-                break;
+        if (!ignoreIncompatibility) {
+            const targetExistingIds = Object.keys(resultingEnchantments);
+            for (const targetId of targetExistingIds) {
+                if (areEnchantmentsIncompatible(enchId, targetId)) {
+                    isIncompatible = true;
+                    break;
+                }
             }
         }
 
@@ -297,33 +301,36 @@ function getXPPointsBetween(startLevel, targetLevel) {
 }
 
 // ==========================================================================
-// 4. GOD GEAR COMBINATION OPTIMIZER (BINARY MERGE TREE SOLVER)
+// 4. FAST GOD GEAR COMBINATION OPTIMIZER (SUB-SECOND DP MEMOIZED SOLVER)
 // ==========================================================================
 
-class MergeNode {
-    constructor({ name, anvilUses = 0, isBook = true, enchantments = {}, left = null, right = null, stepCost = 0 }) {
-        this.name = name;
-        this.anvilUses = anvilUses;
-        this.isBook = isBook;
-        this.enchantments = enchantments;
-        this.left = left;
-        this.right = right;
-        this.stepCost = stepCost;
-    }
+function getItemSignature(item) {
+    const enchs = Object.entries(item.enchantments).sort().map(([k, v]) => `${k}:${v}`).join(',');
+    return `${item.isBook ? 'B' : 'G'}:${item.anvilUses}:[${enchs}]`;
+}
+
+function getMultisetKey(items) {
+    return items.map(getItemSignature).sort().join(';');
 }
 
 /**
- * /**
- * Solves for the optimal binary merge tree starting from ANY custom list of inventory books/items.
+ * Ultra-fast DP memoized solver for finding optimal combination tree.
  */
-function findOptimalCombinationTreeFromItems({ baseItem, initialBooks, edition = 'java' }) {
+function findOptimalCombinationTreeFromItems({ baseItem, initialBooks, edition = 'java', ignoreIncompatibility = false }) {
     const initialItems = [baseItem, ...initialBooks];
 
     let minTotalCost = Infinity;
     let bestSolution = null;
+    const memoMap = new Map();
 
     function search(currentItems, accumulatedCost, maxStepCost, stepsHistory) {
         if (accumulatedCost >= minTotalCost) return;
+
+        const setKey = getMultisetKey(currentItems);
+        if (memoMap.has(setKey) && memoMap.get(setKey) <= accumulatedCost) {
+            return;
+        }
+        memoMap.set(setKey, accumulatedCost);
 
         if (currentItems.length === 1) {
             const finalItem = currentItems[0];
@@ -351,7 +358,7 @@ function findOptimalCombinationTreeFromItems({ baseItem, initialBooks, edition =
 
                 if (target.isBook && !sacrifice.isBook) continue;
 
-                const res = calculateAnvilStep({ targetItem: target, sacrificeItem: sacrifice, edition });
+                const res = calculateAnvilStep({ targetItem: target, sacrificeItem: sacrifice, edition, ignoreIncompatibility });
                 if (res.isTooExpensive) continue;
 
                 const newItem = {
@@ -392,10 +399,6 @@ function findOptimalCombinationTreeFromItems({ baseItem, initialBooks, edition =
 
     return bestSolution;
 }
-
-/**
- * Standard mode tree solver (auto-builds single enchantment books).
- */
 function findOptimalCombinationTree({ baseItemType, baseItemUses, desiredEnchantments, edition = 'java' }) {
     const targetGearLeaf = {
         id: 'GEAR',
@@ -477,6 +480,8 @@ function initNavTabs() {
     });
 }
 
+
+
 // ==========================================================================
 // TAB 1: GOD GEAR OPTIMIZER UI LOGIC
 // ==========================================================================
@@ -489,6 +494,7 @@ function initOptimizerTab() {
     const enchantListContainer = document.getElementById('opt-enchantment-list');
     const selectAllBtn = document.getElementById('opt-select-all');
     const runBtn = document.getElementById('btn-run-optimizer');
+    const ignoreIncompCheckbox = document.getElementById('opt-ignore-incompatibility');
 
     const modeStandardBtn = document.getElementById('opt-mode-standard');
     const modeCustomBtn = document.getElementById('opt-mode-custom');
@@ -497,6 +503,14 @@ function initOptimizerTab() {
     const btnAddCustomBook = document.getElementById('btn-add-custom-book');
     const customBooksContainer = document.getElementById('custom-books-list');
     const btnPresetBoots = document.getElementById('btn-load-preset-boots');
+
+    // Modal elements
+    const modal = document.getElementById('modal-custom-book');
+    const modalCloseBtn = document.getElementById('btn-close-modal');
+    const modalCancelBtn = document.getElementById('btn-cancel-modal');
+    const modalSaveBtn = document.getElementById('btn-save-modal-book');
+    const modalAddEnchBtn = document.getElementById('btn-modal-add-ench');
+    const modalEnchBuilder = document.getElementById('modal-enchantments-builder');
 
     // Mode Toggle
     modeStandardBtn.addEventListener('click', () => {
@@ -514,7 +528,7 @@ function initOptimizerTab() {
         sectionCustom.classList.remove('hidden');
         sectionStandard.classList.add('hidden');
         if (customBooksInventory.length === 0) {
-            addDefaultCustomBook();
+            openCustomBookModal();
         }
     });
 
@@ -541,6 +555,58 @@ function initOptimizerTab() {
         runBtn.click(); // Auto-solve preset!
     });
 
+    // Conflict Checking in Standard Mode
+    function updateConflictingEnchantmentsUI() {
+        if (ignoreIncompCheckbox.checked) {
+            // Remove disabled conflicts
+            enchantListContainer.querySelectorAll('.enchantment-option-card').forEach(card => {
+                card.classList.remove('disabled-conflict');
+                const cb = card.querySelector('.opt-ench-checkbox');
+                if (cb) cb.disabled = false;
+                const warn = card.querySelector('.conflict-warning-tag');
+                if (warn) warn.remove();
+            });
+            return;
+        }
+
+        const checkedBoxes = Array.from(enchantListContainer.querySelectorAll('.opt-ench-checkbox:checked'));
+        const selectedIds = checkedBoxes.map(cb => cb.getAttribute('data-id'));
+
+        enchantListContainer.querySelectorAll('.enchantment-option-card').forEach(card => {
+            const cb = card.querySelector('.opt-ench-checkbox');
+            const id = cb.getAttribute('data-id');
+
+            if (cb.checked) return; // Keep selected box enabled
+
+            let conflictingSelectedId = null;
+            for (const selId of selectedIds) {
+                if (areEnchantmentsIncompatible(id, selId)) {
+                    conflictingSelectedId = selId;
+                    break;
+                }
+            }
+
+            const existingWarn = card.querySelector('.conflict-warning-tag');
+
+            if (conflictingSelectedId) {
+                card.classList.add('disabled-conflict');
+                cb.disabled = true;
+                if (!existingWarn) {
+                    const tag = document.createElement('span');
+                    tag.className = 'conflict-warning-tag';
+                    tag.textContent = `(Conflicts with ${ENCHANT_MAP.get(conflictingSelectedId)?.name || conflictingSelectedId})`;
+                    card.querySelector('.enchant-info-col').appendChild(tag);
+                }
+            } else {
+                card.classList.remove('disabled-conflict');
+                cb.disabled = false;
+                if (existingWarn) existingWarn.remove();
+            }
+        });
+    }
+
+    ignoreIncompCheckbox.addEventListener('change', updateConflictingEnchantmentsUI);
+
     // Populate enchantments list when item type changes in standard mode
     function populateEnchantments() {
         const selectedCategory = itemTypeSelect.value;
@@ -565,31 +631,84 @@ function initOptimizerTab() {
                     </select>
                 </div>
             `;
+
+            card.querySelector('.opt-ench-checkbox').addEventListener('change', updateConflictingEnchantmentsUI);
             enchantListContainer.appendChild(card);
         });
+
+        updateConflictingEnchantmentsUI();
     }
 
     itemTypeSelect.addEventListener('change', populateEnchantments);
     populateEnchantments(); // Initial populate
 
     selectAllBtn.addEventListener('click', () => {
-        const checkboxes = enchantListContainer.querySelectorAll('.opt-ench-checkbox');
+        const checkboxes = enchantListContainer.querySelectorAll('.opt-ench-checkbox:not(:disabled)');
         checkboxes.forEach(cb => { cb.checked = true; });
+        updateConflictingEnchantmentsUI();
     });
 
-    // Custom Book Management
-    btnAddCustomBook.addEventListener('click', () => addDefaultCustomBook());
+    // Custom Book Modal Management
+    btnAddCustomBook.addEventListener('click', () => openCustomBookModal());
+    modalCloseBtn.addEventListener('click', closeCustomBookModal);
+    modalCancelBtn.addEventListener('click', closeCustomBookModal);
 
-    function addDefaultCustomBook() {
-        const idx = customBooksInventory.length + 1;
-        customBooksInventory.push({
-            id: `cb_${Date.now()}_${idx}`,
-            name: `Book ${idx}`,
-            anvilUses: 0,
-            enchantments: { protection: 4 }
-        });
-        renderCustomBooksUI();
+    modalAddEnchBtn.addEventListener('click', () => addModalEnchantRow());
+
+    function openCustomBookModal() {
+        document.getElementById('modal-book-name').value = `Book ${customBooksInventory.length + 1}`;
+        document.getElementById('modal-book-uses').value = '0';
+        modalEnchBuilder.innerHTML = '';
+        addModalEnchantRow('protection', 4);
+        modal.classList.remove('hidden');
     }
+
+    function closeCustomBookModal() {
+        modal.classList.add('hidden');
+    }
+
+    function addModalEnchantRow(defaultId = 'protection', defaultLevel = 1) {
+        const row = document.createElement('div');
+        row.className = 'sim-enchant-row';
+        row.innerHTML = `
+            <select class="form-control modal-ench-select">
+                ${ENCHANTMENTS_DB.map(e => `<option value="${e.id}" ${e.id === defaultId ? 'selected' : ''}>${e.name}</option>`).join('')}
+            </select>
+            <select class="form-control modal-level-select" style="width: 80px;">
+                ${[1, 2, 3, 4, 5].map(l => `<option value="${l}" ${l === defaultLevel ? 'selected' : ''}>${toRoman(l)}</option>`).join('')}
+            </select>
+            <button type="button" class="btn-remove-row">&times;</button>
+        `;
+        row.querySelector('.btn-remove-row').addEventListener('click', () => row.remove());
+        modalEnchBuilder.appendChild(row);
+    }
+
+    modalSaveBtn.addEventListener('click', () => {
+        const name = document.getElementById('modal-book-name').value.trim() || `Book ${customBooksInventory.length + 1}`;
+        const uses = parseInt(document.getElementById('modal-book-uses').value, 10) || 0;
+
+        const enchants = {};
+        modalEnchBuilder.querySelectorAll('.sim-enchant-row').forEach(row => {
+            const id = row.querySelector('.modal-ench-select').value;
+            const lvl = parseInt(row.querySelector('.modal-level-select').value, 10) || 1;
+            enchants[id] = lvl;
+        });
+
+        if (Object.keys(enchants).length === 0) {
+            alert('Please add at least one enchantment to this book!');
+            return;
+        }
+
+        customBooksInventory.push({
+            id: `cb_${Date.now()}_${Math.random()}`,
+            name,
+            anvilUses: uses,
+            enchantments: enchants
+        });
+
+        renderCustomBooksUI();
+        closeCustomBookModal();
+    });
 
     function renderCustomBooksUI() {
         customBooksContainer.innerHTML = '';
@@ -603,7 +722,7 @@ function initOptimizerTab() {
 
             card.innerHTML = `
                 <div class="custom-book-header">
-                    <span class="custom-book-title">${book.name} (Anvil Uses: ${book.anvilUses})</span>
+                    <span class="custom-book-title">📖 ${book.name} <span class="badge badge-info">Uses: ${book.anvilUses} (PWP: ${getPWP(book.anvilUses)} lvl)</span></span>
                     <button type="button" class="btn-remove-row btn-remove-custom-book" data-idx="${bIdx}">&times;</button>
                 </div>
                 <div class="custom-book-enchants-list">
@@ -624,61 +743,75 @@ function initOptimizerTab() {
     runBtn.addEventListener('click', () => {
         const selectedCategory = itemTypeSelect.value;
         const baseUses = parseInt(document.getElementById('opt-base-uses').value, 10) || 0;
+        const ignoreIncompatibility = ignoreIncompCheckbox.checked;
 
-        let solution = null;
+        // Show non-blocking loading status
+        runBtn.disabled = true;
+        runBtn.innerHTML = '⏳ Calculating Optimal Tree...';
 
-        if (optimizerMode === 'standard') {
-            const checkboxes = enchantListContainer.querySelectorAll('.opt-ench-checkbox:checked');
-            const desiredEnchantments = [];
+        setTimeout(() => {
+            let solution = null;
 
-            checkboxes.forEach(cb => {
-                const id = cb.getAttribute('data-id');
-                const levelSelect = enchantListContainer.querySelector(`.opt-ench-level[data-id="${id}"]`);
-                const level = parseInt(levelSelect.value, 10) || 1;
-                desiredEnchantments.push({ id, level });
-            });
+            if (optimizerMode === 'standard') {
+                const checkboxes = enchantListContainer.querySelectorAll('.opt-ench-checkbox:checked');
+                const desiredEnchantments = [];
 
-            if (desiredEnchantments.length === 0) {
-                alert('Please select at least one desired enchantment!');
-                return;
+                checkboxes.forEach(cb => {
+                    const id = cb.getAttribute('data-id');
+                    const levelSelect = enchantListContainer.querySelector(`.opt-ench-level[data-id="${id}"]`);
+                    const level = parseInt(levelSelect.value, 10) || 1;
+                    desiredEnchantments.push({ id, level });
+                });
+
+                if (desiredEnchantments.length === 0) {
+                    alert('Please select at least one desired enchantment!');
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '⚡ Calculate Optimal Combination Tree';
+                    return;
+                }
+
+                solution = findOptimalCombinationTree({
+                    baseItemType: selectedCategory,
+                    baseItemUses: baseUses,
+                    desiredEnchantments,
+                    edition: currentEdition
+                });
+            } else {
+                if (customBooksInventory.length === 0) {
+                    alert('Please add at least one book to your custom inventory!');
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '⚡ Calculate Optimal Combination Tree';
+                    return;
+                }
+
+                const baseItem = {
+                    id: 'GEAR',
+                    name: `Base ${capitalize(selectedCategory)}`,
+                    anvilUses: baseUses,
+                    isBook: false,
+                    enchantments: {}
+                };
+
+                const initialBooks = customBooksInventory.map((b, i) => ({
+                    id: b.id || `CB_${i + 1}`,
+                    name: b.name || `Book ${i + 1}`,
+                    anvilUses: b.anvilUses || 0,
+                    isBook: true,
+                    enchantments: { ...b.enchantments }
+                }));
+
+                solution = findOptimalCombinationTreeFromItems({
+                    baseItem,
+                    initialBooks,
+                    edition: currentEdition,
+                    ignoreIncompatibility
+                });
             }
 
-            solution = findOptimalCombinationTree({
-                baseItemType: selectedCategory,
-                baseItemUses: baseUses,
-                desiredEnchantments,
-                edition: currentEdition
-            });
-        } else {
-            if (customBooksInventory.length === 0) {
-                alert('Please add at least one book to your custom inventory!');
-                return;
-            }
-
-            const baseItem = {
-                id: 'GEAR',
-                name: `Base ${capitalize(selectedCategory)}`,
-                anvilUses: baseUses,
-                isBook: false,
-                enchantments: {}
-            };
-
-            const initialBooks = customBooksInventory.map((b, i) => ({
-                id: b.id || `CB_${i + 1}`,
-                name: b.name || `Book ${i + 1}`,
-                anvilUses: b.anvilUses || 0,
-                isBook: true,
-                enchantments: { ...b.enchantments }
-            }));
-
-            solution = findOptimalCombinationTreeFromItems({
-                baseItem,
-                initialBooks,
-                edition: currentEdition
-            });
-        }
-
-        renderOptimizerSolution(solution);
+            renderOptimizerSolution(solution);
+            runBtn.disabled = false;
+            runBtn.innerHTML = '⚡ Calculate Optimal Combination Tree';
+        }, 10);
     });
 }
 

@@ -146,6 +146,15 @@
                                 </div>
                             </div>
 
+                            <!-- Ignore Incompatibility Checkbox -->
+                            <div class="form-group">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" id="opt-ignore-incompatibility">
+                                    <span class="checkmark"></span>
+                                    Ignore Incompatible Enchantments Check (Allow Illegal Combos)
+                                </label>
+                            </div>
+
                             <!-- Solve Button -->
                             <button id="btn-run-optimizer" class="btn btn-primary btn-block btn-lg">
                                 ⚡ Calculate Optimal Combination Tree
@@ -529,6 +538,43 @@
         <footer class="app-footer">
             <p>Minecraft Prior Work Penalty & God Gear Calculator &bull; Systematic 1.21 Anvil Mechanics Engine</p>
         </footer>
+    </div>
+
+    <!-- Custom Book Builder Modal -->
+    <div id="modal-custom-book" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-book-title">Add Custom Book to Inventory</h3>
+                <button type="button" id="btn-close-modal" class="btn-text" style="font-size: 1.5rem;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modal-book-name">Book Label / Name:</label>
+                    <input type="text" id="modal-book-name" class="form-control" placeholder="e.g. Book 1: Protection IV + Mending">
+                </div>
+                <div class="form-group">
+                    <label for="modal-book-uses">Previous Anvil Uses ($N$):</label>
+                    <select id="modal-book-uses" class="form-control">
+                        <option value="0" selected>0 uses (Penalty: 0 levels)</option>
+                        <option value="1">1 use (Penalty: 1 level)</option>
+                        <option value="2">2 uses (Penalty: 3 levels)</option>
+                        <option value="3">3 uses (Penalty: 7 levels)</option>
+                        <option value="4">4 uses (Penalty: 15 levels)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Enchantments on this Book:</label>
+                    <div id="modal-enchantments-builder" class="sim-enchant-builder">
+                        <!-- Dynamic enchantment rows added here -->
+                    </div>
+                    <button type="button" id="btn-modal-add-ench" class="btn btn-secondary btn-sm">+ Add Enchantment</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancel-modal" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="btn-save-modal-book" class="btn btn-primary">Save Book to Inventory</button>
+            </div>
+        </div>
     </div>
 
     <!-- Application Script -->
