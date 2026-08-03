@@ -12,6 +12,15 @@ function toRoman(num) {
     return romanMap[num] || num;
 }
 
+function formatEnchantmentDisplay(id, level) {
+    const ench = ENCHANT_MAP ? ENCHANT_MAP.get(id) : null;
+    const name = ench ? ench.name : capitalize(id);
+    if (ench && ench.maxLevel === 1) {
+        return name; // Single level enchantments (Flame, Infinity, Mending, Silk Touch, Aqua Affinity, etc.) don't show roman numerals
+    }
+    return `${name} ${toRoman(level)}`;
+}
+
 function capitalize(str) {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1).replace('_', ' ');
@@ -617,19 +626,16 @@ function initOptimizerTab() {
         availableEnchants.forEach(ench => {
             const card = document.createElement('div');
             card.className = 'enchantment-option-card';
-
             card.innerHTML = `
                 <div class="enchant-info-col">
-                    <label class="checkbox-container">
-                        <input type="checkbox" class="opt-ench-checkbox" data-id="${ench.id}">
-                        <span class="enchant-name-label">${ench.name}</span>
-                    </label>
+                    <input type="checkbox" class="opt-ench-checkbox" data-id="${ench.id}">
+                    <span class="enchant-name">${ench.name}</span>
                 </div>
-                <div class="enchant-level-col">
-                    <select class="form-control enchant-level-select opt-ench-level" data-id="${ench.id}">
-                        ${Array.from({ length: ench.maxLevel }, (_, i) => `<option value="${i + 1}" ${i + 1 === ench.maxLevel ? 'selected' : ''}>${toRoman(i + 1)}</option>`).join('')}
+                ${ench.maxLevel > 1 ? `
+                    <select class="form-control opt-ench-level" data-id="${ench.id}">
+                        ${Array.from({length: ench.maxLevel}, (_, i) => `<option value="${i+1}">${toRoman(i+1)}</option>`).join('')}
                     </select>
-                </div>
+                ` : `<span class="opt-ench-level" data-id="${ench.id}">I</span>`}
             `;
 
             card.querySelector('.opt-ench-checkbox').addEventListener('change', updateConflictingEnchantmentsUI);
