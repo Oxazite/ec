@@ -906,6 +906,28 @@ function renderOptimizerSolution(solution) {
     document.getElementById('metric-final-pwp').textContent = `${solution.finalItem.anvilUses > 0 ? getPWP(solution.finalItem.anvilUses) : 0} Lvl`;
     document.getElementById('metric-final-uses').textContent = `${solution.finalItem.anvilUses} Uses`;
 
+    // Dynamically update max-step status badge
+    const maxStepStatus = document.getElementById('metric-max-step-status');
+    if (maxStepStatus) {
+        if (solution.maxStepCost >= 35) {
+            maxStepStatus.className = 'metric-sub text-warning';
+            maxStepStatus.textContent = '⚠️ High Cost Step';
+        } else {
+            maxStepStatus.className = 'metric-sub text-success';
+            maxStepStatus.textContent = '✔ Safe (≤ 34 Lvl)';
+        }
+    }
+
+    // Populate summary badges in card header
+    const summaryBadges = document.getElementById('solution-summary-badges');
+    if (summaryBadges) {
+        summaryBadges.innerHTML = `
+            <span class="badge badge-accent">${solution.totalCost} Total Lvl</span>
+            <span class="badge badge-info">${solution.steps.length} Steps</span>
+            <span class="badge ${solution.maxStepCost >= 35 ? 'badge-warning' : 'badge-success'}">Max Step: ${solution.maxStepCost} Lvl</span>
+        `;
+    }
+
     // Render Steps Timeline
     const timeline = document.getElementById('steps-timeline');
     timeline.innerHTML = '';

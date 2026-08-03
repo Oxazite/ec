@@ -73,6 +73,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
     background: var(--bg-card);
     backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
@@ -224,6 +226,82 @@ body {
     }
 }
 
+/* Tab icon emoji inside nav tabs */
+.tab-icon {
+    display: inline-block;
+    margin-right: 0.35rem;
+    font-size: 1rem;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Card intro paragraph */
+.card-intro {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+}
+
+/* Config card (optimizer left panel sub-section) */
+.config-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Input with hint wrapper */
+.input-with-hint {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+/* Solution card (right panel) */
+.solution-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+}
+
+/* Summary badges container in card-header */
+.summary-badges-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Optimizer results container */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Simulator slot modifiers */
+.target-slot  { border-top: 3px solid var(--accent-emerald); }
+.sacrifice-slot { border-top: 3px solid var(--accent-purple); }
+
+/* XP tab cards */
+.xp-form-card,
+.xp-info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+}
+.xp-info-card {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* Custom checkbox checkmark span — native checkbox is kept visible */
+.checkmark {
+    display: none; /* Using native checkbox; span is legacy placeholder */
+}
+
 /* Cards */
 .card {
     background: var(--bg-card);
@@ -291,6 +369,12 @@ body {
     background: rgba(239, 68, 68, 0.2);
     color: var(--status-danger);
     border-color: rgba(239, 68, 68, 0.4);
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--status-warning);
+    border-color: rgba(245, 158, 11, 0.4);
 }
 
 /* Form Controls */
@@ -404,6 +488,19 @@ body {
     font-size: 0.88rem;
     font-weight: 500;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+/* Conflict warning tag — shown inline below the enchantment name */
+.conflict-warning-tag {
+    font-size: 0.72rem;
+    color: var(--status-danger);
+    font-weight: 600;
+    white-space: nowrap;
+    display: block;
+    margin-top: 2px;
 }
 
 .enchant-level-select, select.opt-ench-level {
@@ -676,6 +773,7 @@ body {
 .text-success { color: var(--status-success); }
 .text-warning { color: var(--status-warning); }
 .text-danger { color: var(--status-danger); }
+.text-muted { color: var(--text-muted); }
 
 /* Steps Section */
 .steps-section {
@@ -790,6 +888,10 @@ body {
 @media (max-width: 900px) {
     .anvil-lab-grid {
         grid-template-columns: 1fr;
+    }
+    .anvil-plus-divider {
+        padding: 0.5rem 0;
+        min-height: 2.5rem;
     }
 }
 
