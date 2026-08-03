@@ -628,14 +628,16 @@ function initOptimizerTab() {
             card.className = 'enchantment-option-card';
             card.innerHTML = `
                 <div class="enchant-info-col">
-                    <input type="checkbox" class="opt-ench-checkbox" data-id="${ench.id}">
-                    <span class="enchant-name">${ench.name}</span>
+                    <label class="checkbox-container">
+                        <input type="checkbox" class="opt-ench-checkbox" data-id="${ench.id}">
+                        <span class="enchant-name-label">${ench.name}</span>
+                    </label>
                 </div>
                 ${ench.maxLevel > 1 ? `
-                    <select class="form-control opt-ench-level" data-id="${ench.id}">
+                    <select class="form-control enchant-level-select opt-ench-level" data-id="${ench.id}">
                         ${Array.from({length: ench.maxLevel}, (_, i) => `<option value="${i+1}">${toRoman(i+1)}</option>`).join('')}
                     </select>
-                ` : `<span class="opt-ench-level" data-id="${ench.id}">I</span>`}
+                ` : `<span class="badge badge-accent single-level-badge" data-id="${ench.id}">Level I</span>`}
             `;
 
             card.querySelector('.opt-ench-checkbox').addEventListener('change', updateConflictingEnchantmentsUI);
