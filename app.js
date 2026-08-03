@@ -46,20 +46,10 @@ const INCOMPATIBILITY_GROUPS = {
         name: 'Mace Primary Offense',
         members: ['density', 'breach', 'smite', 'bane_of_arthropods', 'sharpness']
     },
-    BOW_INFINITE: {
-        id: 'bow_infinite',
-        name: 'Bow Mending vs Infinity',
-        members: ['infinity', 'mending']
-    },
     MINING_DROP: {
         id: 'mining_drop',
         name: 'Tool Mining Fortune vs Silk Touch',
         members: ['silk_touch', 'fortune']
-    },
-    TRIDENT_MOVEMENT: {
-        id: 'trident_movement',
-        name: 'Trident Riptide vs Loyalty/Channeling',
-        members: ['riptide', 'loyalty', 'channeling']
     },
     CROSSBOW_SHOT: {
         id: 'crossbow_shot',
@@ -72,6 +62,16 @@ const INCOMPATIBILITY_GROUPS = {
         members: ['depth_strider', 'frost_walker']
     }
 };
+
+// Pairwise conflict pairs that can't be modelled by simple mutual-exclusion groups.
+// In vanilla 1.21:
+//   - Riptide conflicts with Loyalty AND Channeling, but Loyalty + Channeling are compatible
+//   - Infinity conflicts with Mending
+const PAIRWISE_CONFLICTS = [
+    ['riptide', 'loyalty'],
+    ['riptide', 'channeling'],
+    ['infinity', 'mending']
+];
 
 const RECOMMENDED_GOD_GEAR_BUILDS = {
     boots: ['protection', 'feather_falling', 'depth_strider', 'soul_speed', 'unbreaking', 'mending', 'thorns'],
@@ -115,7 +115,7 @@ const ENCHANTMENTS_DB = [
     { id: 'smite', name: 'Smite', maxLevel: 5, bookMultiplier: 1, itemMultiplier: 2, group: 'melee_damage', categories: ['sword', 'axe'] },
     { id: 'bane_of_arthropods', name: 'Bane of Arthropods', maxLevel: 5, bookMultiplier: 1, itemMultiplier: 2, group: 'melee_damage', categories: ['sword', 'axe'] },
     { id: 'knockback', name: 'Knockback', maxLevel: 2, bookMultiplier: 1, itemMultiplier: 2, group: null, categories: ['sword'] },
-    { id: 'fire_aspect', name: 'Fire Aspect', maxLevel: 2, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['sword'] },
+    { id: 'fire_aspect', name: 'Fire Aspect', maxLevel: 2, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['sword', 'mace'] },
     { id: 'looting', name: 'Looting', maxLevel: 3, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['sword'] },
     { id: 'sweeping_edge', name: 'Sweeping Edge', maxLevel: 3, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['sword'] },
 
@@ -133,17 +133,17 @@ const ENCHANTMENTS_DB = [
     { id: 'power', name: 'Power', maxLevel: 5, bookMultiplier: 1, itemMultiplier: 2, group: null, categories: ['bow'] },
     { id: 'punch', name: 'Punch', maxLevel: 2, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['bow'] },
     { id: 'flame', name: 'Flame', maxLevel: 1, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['bow'] },
-    { id: 'infinity', name: 'Infinity', maxLevel: 1, bookMultiplier: 4, itemMultiplier: 8, group: 'bow_infinite', categories: ['bow'] },
+    { id: 'infinity', name: 'Infinity', maxLevel: 1, bookMultiplier: 4, itemMultiplier: 8, group: null, categories: ['bow'] },
     
     { id: 'quick_charge', name: 'Quick Charge', maxLevel: 3, bookMultiplier: 1, itemMultiplier: 2, group: null, categories: ['crossbow'] },
     { id: 'multishot', name: 'Multishot', maxLevel: 1, bookMultiplier: 2, itemMultiplier: 4, group: 'crossbow_shot', categories: ['crossbow'] },
     { id: 'piercing', name: 'Piercing', maxLevel: 4, bookMultiplier: 1, itemMultiplier: 2, group: 'crossbow_shot', categories: ['crossbow'] },
 
     // Trident
-    { id: 'loyalty', name: 'Loyalty', maxLevel: 3, bookMultiplier: 1, itemMultiplier: 2, group: 'trident_movement', categories: ['trident'] },
+    { id: 'loyalty', name: 'Loyalty', maxLevel: 3, bookMultiplier: 1, itemMultiplier: 2, group: null, categories: ['trident'] },
     { id: 'impaling', name: 'Impaling', maxLevel: 5, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['trident'] },
-    { id: 'riptide', name: 'Riptide', maxLevel: 3, bookMultiplier: 2, itemMultiplier: 4, group: 'trident_movement', categories: ['trident'] },
-    { id: 'channeling', name: 'Channeling', maxLevel: 1, bookMultiplier: 4, itemMultiplier: 8, group: 'trident_movement', categories: ['trident'] },
+    { id: 'riptide', name: 'Riptide', maxLevel: 3, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['trident'] },
+    { id: 'channeling', name: 'Channeling', maxLevel: 1, bookMultiplier: 4, itemMultiplier: 8, group: null, categories: ['trident'] },
 
     // Fishing Rod
     { id: 'luck_of_the_sea', name: 'Luck of the Sea', maxLevel: 3, bookMultiplier: 2, itemMultiplier: 4, group: null, categories: ['fishing_rod'] },
@@ -183,12 +183,20 @@ function areEnchantmentsIncompatible(idA, idB) {
     const enchB = ENCHANT_MAP.get(idB);
     if (!enchA || !enchB) return false;
     
+    // Check pairwise conflicts (handles asymmetric cases like Riptide/Loyalty/Channeling and Infinity/Mending)
+    for (const [a, b] of PAIRWISE_CONFLICTS) {
+        if ((idA === a && idB === b) || (idA === b && idB === a)) {
+            return true;
+        }
+    }
+
     // Special rule for Mace: Density, Breach, Smite, Bane of Arthropods, Sharpness are all mutually exclusive
     const maceGroup = INCOMPATIBILITY_GROUPS.MACE_OFFENSIVE.members;
     if (maceGroup.includes(idA) && maceGroup.includes(idB)) {
         return true;
     }
 
+    // Standard group-based check
     if (enchA.group && enchB.group && enchA.group === enchB.group) {
         return true;
     }
@@ -1083,13 +1091,26 @@ function initInspectorTab() {
 
         filtered.forEach(ench => {
             const tr = document.createElement('tr');
-            const groupInfo = ench.group ? INCOMPATIBILITY_GROUPS[ench.group.toUpperCase()]?.name || ench.group : 'None';
+            // Build conflict info from group + pairwise conflicts
+            let conflictLabels = [];
+            if (ench.group) {
+                const groupName = INCOMPATIBILITY_GROUPS[ench.group.toUpperCase()]?.name || ench.group;
+                conflictLabels.push(groupName);
+            }
+            for (const [a, b] of PAIRWISE_CONFLICTS) {
+                if (ench.id === a) conflictLabels.push(`vs ${ENCHANT_MAP.get(b)?.name || b}`);
+                if (ench.id === b) conflictLabels.push(`vs ${ENCHANT_MAP.get(a)?.name || a}`);
+            }
+            const conflictDisplay = conflictLabels.length > 0
+                ? conflictLabels.map(l => `<span class="badge badge-danger">${l}</span>`).join(' ')
+                : '<span class="text-muted">None</span>';
+
             tr.innerHTML = `
                 <td><strong>${ench.name}</strong></td>
                 <td>${toRoman(ench.maxLevel)} (${ench.maxLevel})</td>
                 <td><span class="badge badge-accent">&times;${ench.bookMultiplier}</span></td>
                 <td><span class="badge badge-info">&times;${ench.itemMultiplier}</span></td>
-                <td>${groupInfo !== 'None' ? `<span class="badge badge-danger">${groupInfo}</span>` : '<span class="text-muted">None</span>'}</td>
+                <td>${conflictDisplay}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -1125,16 +1146,3 @@ function initXPCalculatorTab() {
     updateXP();
 }
 
-// ==========================================================================
-// UTILITY FUNCTIONS
-// ==========================================================================
-
-function toRoman(num) {
-    const romanMap = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
-    return romanMap[num] || num;
-}
-
-function capitalize(str) {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1).replace('_', ' ');
-}
