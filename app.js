@@ -792,19 +792,42 @@ function renderProtocol() {
     let shuffleHtml = '';
     if (allSolutions.length > 1) {
         shuffleHtml = `
-            <div class="shuffle-container">
-                <button class="btn btn-shuffle" id="btn-shuffle" onclick="shuffleSolution()">
-                    🔀 Shuffle Alternative Protocol (${currentSolutionIndex + 1} of ${allSolutions.length})
-                </button>
+            <div class="protocol-nav-bar">
+                <button class="btn-nav" title="Previous Protocol" onclick="changeProtocolIndex(-1)">◀</button>
+                <div class="protocol-nav-label">
+                    Protocol
+                    <input type="number" class="protocol-num-input" id="protocol-num-input"
+                        min="1" max="${allSolutions.length}" value="${currentSolutionIndex + 1}"
+                        onchange="jumpToProtocol(this.value)"
+                        onkeydown="if(event.key==='Enter') jumpToProtocol(this.value)">
+                    of ${allSolutions.length}
+                </div>
+                <button class="btn-nav" title="Next Protocol" onclick="changeProtocolIndex(1)">▶</button>
+                <button class="btn-random" title="Random Protocol" onclick="randomProtocol()">🔀 Random</button>
             </div>`;
     }
 
     stepsEl.innerHTML = stepsHtml + shuffleHtml;
 }
 
-function shuffleSolution() {
+function changeProtocolIndex(delta) {
     if (!allSolutions || allSolutions.length <= 1) return;
-    currentSolutionIndex = (currentSolutionIndex + 1) % allSolutions.length;
+    currentSolutionIndex = (currentSolutionIndex + delta + allSolutions.length) % allSolutions.length;
+    renderProtocol();
+}
+
+function jumpToProtocol(val) {
+    if (!allSolutions || allSolutions.length <= 1) return;
+    let num = parseInt(val, 10);
+    if (isNaN(num)) num = 1;
+    num = Math.max(1, Math.min(allSolutions.length, num));
+    currentSolutionIndex = num - 1;
+    renderProtocol();
+}
+
+function randomProtocol() {
+    if (!allSolutions || allSolutions.length <= 1) return;
+    currentSolutionIndex = Math.floor(Math.random() * allSolutions.length);
     renderProtocol();
 }
 
