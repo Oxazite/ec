@@ -833,13 +833,13 @@ function randomProtocol() {
 document.addEventListener('DOMContentLoaded', () => {
     // Render authentic Minecraft header & mode icons
     const headerIcon = document.getElementById('header-anvil-icon');
-    if (headerIcon) headerIcon.innerHTML = getAnvilIconSVG(28);
+    if (headerIcon) headerIcon.innerHTML = getAnvilIconHTML(28);
 
     const xpIcon = document.getElementById('xp-mode-icon');
-    if (xpIcon) xpIcon.innerHTML = getXPOrbIconSVG(18);
+    if (xpIcon) xpIcon.innerHTML = getXPOrbIconHTML(18);
 
     const pwpIcon = document.getElementById('pwp-mode-icon');
-    if (pwpIcon) pwpIcon.innerHTML = getAnvilIconSVG(18);
+    if (pwpIcon) pwpIcon.innerHTML = getAnvilIconHTML(18);
 
     document.getElementById('btn-add-item').addEventListener('click', () => addItem());
     document.getElementById('btn-add-book').addEventListener('click', () => addBook());

@@ -125,18 +125,17 @@ header p {
     white-space: nowrap;
 }
 
-@keyframes xp-pulse {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(132,204,22,0.6)); }
-    50% { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(163,230,53,0.9)); }
+.mc-xp-orb-gif {
+    vertical-align: middle;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 0 4px rgba(132,204,22,0.8));
 }
 
-.mc-xp-orb {
-    animation: xp-pulse 1.4s ease-in-out infinite;
+.mc-anvil-img {
     vertical-align: middle;
-}
-
-.mc-anvil-sprite {
-    vertical-align: middle;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
     filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
 }
 
