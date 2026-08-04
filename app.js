@@ -600,6 +600,19 @@ function renderInventory() {
                 ${canAdd ? `<button class="btn-add-ench" onclick="addEnchantment(${item.uid})">+ Add Enchantment</button>` : ''}
             </div>`;
     }).join('');
+
+    // Auto-calculate whenever inventory changes
+    autoCalculate();
+}
+
+let _autoCalcTimer = null;
+function autoCalculate() {
+    clearTimeout(_autoCalcTimer);
+    _autoCalcTimer = setTimeout(() => {
+        if (inventory.length >= 2) {
+            calculate();
+        }
+    }, 100);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -843,7 +856,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-add-item').addEventListener('click', () => addItem());
     document.getElementById('btn-add-book').addEventListener('click', () => addBook());
-    document.getElementById('btn-calculate').addEventListener('click', () => calculate());
 
     // Mode toggle
     document.getElementById('mode-xp').addEventListener('click', () => setMode('xp'));

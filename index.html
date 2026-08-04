@@ -21,10 +21,6 @@
                     <p>Minecraft 1.21+ · Optimal Enchantment Combination Calculator</p>
                 </div>
             </div>
-            <div class="mode-toggle">
-                <button class="mode-btn active" data-mode="xp" id="mode-xp"><span id="xp-mode-icon"></span> Min XP</button>
-                <button class="mode-btn" data-mode="pwp" id="mode-pwp"><span id="pwp-mode-icon"></span> Min PWP</button>
-            </div>
         </header>
 
         <!-- ── Two-Panel Layout ─────────────────────── -->
@@ -47,7 +43,10 @@
                         <input type="checkbox" id="toggle-conflicts">
                         <span>Allow Conflicting Enchantments</span>
                     </label>
-                    <button class="btn btn-calculate" id="btn-calculate">▶ Calculate Optimal Path</button>
+                    <div class="mode-toggle">
+                        <button class="mode-btn active" data-mode="xp" id="mode-xp"><span id="xp-mode-icon"></span> Min XP</button>
+                        <button class="mode-btn" data-mode="pwp" id="mode-pwp"><span id="pwp-mode-icon"></span> Min PWP</button>
+                    </div>
                 </div>
             </aside>
 
@@ -62,7 +61,7 @@
                     <div id="protocol-empty" class="empty-state">
                         <div class="empty-icon">📋</div>
                         <h3>No Protocol Yet</h3>
-                        <p>Add your items and books on the left, then click Calculate to see the optimal combination order.</p>
+                        <p>Add your items and books on the left to see the optimal combination order.</p>
                     </div>
 
                     <!-- Results (hidden initially) -->
