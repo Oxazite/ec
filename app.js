@@ -156,6 +156,9 @@ function calcStep(target, sacrifice) {
         const info = ENCHANT_MAP.get(enchId);
         if (!info) continue;
 
+        // If target is an item (not book), skip enchantments not applicable to its category
+        if (!target.isBook && target.category && !info.cats.includes(target.category)) continue;
+
         // Check compatibility with all current target enchantments
         let incompat = false;
         for (const tId of Object.keys(resultEnchs)) {
@@ -262,6 +265,9 @@ function findOptimal(items, mode) {
 
                 // Can't put a book in left slot with an item in right slot
                 if (target.isBook && !sacrifice.isBook) continue;
+
+                // Two non-book items can only combine if same category
+                if (!target.isBook && !sacrifice.isBook && target.category !== sacrifice.category) continue;
 
                 const res = calcStep(target, sacrifice);
                 if (res.tooExpensive) continue;
