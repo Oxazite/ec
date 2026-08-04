@@ -354,7 +354,6 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
 let inventory = [];
 let nextId = 1;
 let currentMode = 'xp';
-let lastSolution = null;
 let allSolutions = [];
 let currentSolutionIndex = 0;
 
@@ -583,7 +582,7 @@ function renderInventory() {
                     <select class="level-select" onchange="updateEnchantLevel(${item.uid}, '${enchId}', this.value)">
                         ${levelOptions}
                     </select>
-                    <button class="btn-remove-ench" onclick="removeEnchantment(${item.uid}, '${enchId}')">×</button>
+                    <button class="btn-remove-ench" onclick="removeEnchantment(${item.uid}, '${enchId}')" aria-label="Remove enchantment">×</button>
                 </div>`;
         }).join('');
 
@@ -593,7 +592,7 @@ function renderInventory() {
             <div class="item-card">
                 <div class="item-card-header">
                     <div class="item-card-title">${iconHTML} <span>${title}</span></div>
-                    <button class="btn-remove" onclick="removeItem(${item.uid})">×</button>
+                    <button class="btn-remove-item" onclick="removeItem(${item.uid})" aria-label="Remove item">×</button>
                 </div>
                 ${catSelect}
                 ${usesRow}
@@ -683,7 +682,6 @@ function calculate() {
         if (!solutions || solutions.length === 0) {
             allSolutions = [];
             currentSolutionIndex = 0;
-            lastSolution = null;
             emptyEl.classList.add('hidden');
             resultEl.classList.add('hidden');
             errorEl.classList.remove('hidden');
@@ -693,7 +691,6 @@ function calculate() {
 
         allSolutions = solutions;
         currentSolutionIndex = 0;
-        lastSolution = allSolutions[0];
         emptyEl.classList.add('hidden');
         errorEl.classList.add('hidden');
         resultEl.classList.remove('hidden');
