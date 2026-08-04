@@ -296,6 +296,8 @@ function findOptimal(items, mode) {
                     sacrificeIsBook: sacrifice.isBook,
                     targetUses: target.anvilUses,
                     sacrificeUses: sacrifice.anvilUses,
+                    targetEnchs: { ...target.enchantments },
+                    sacrificeEnchs: { ...sacrifice.enchantments },
                     cost: res.totalCost,
                     tPWP: res.tPWP,
                     sPWP: res.sPWP,
@@ -655,16 +657,22 @@ function renderProtocol(solution) {
         const tIcon = step.targetIsBook ? '📗' : '⚔️';
         const sIcon = step.sacrificeIsBook ? '📗' : '⚔️';
 
-        // Show enchantments on result
-        const resultEnchStr = Object.entries(step.resultEnchs)
-            .map(([id, lv]) => fmtEnch(id, lv))
-            .join(', ');
+        // Build descriptive names with current enchantments
+        const tEnchStr = Object.entries(step.targetEnchs).map(([id, lv]) => fmtEnch(id, lv)).join(', ');
+        const sEnchStr = Object.entries(step.sacrificeEnchs).map(([id, lv]) => fmtEnch(id, lv)).join(', ');
+
+        const tLabel = step.targetIsBook ? 'Book' : step.targetName.replace(/ #\d+$/, '');
+        const sLabel = step.sacrificeIsBook ? 'Book' : step.sacrificeName.replace(/ #\d+$/, '');
+
+        const tDisplay = tEnchStr ? `${tLabel} (${tEnchStr})` : tLabel;
+        const sDisplay = sEnchStr ? `${sLabel} (${sEnchStr})` : sLabel;
 
         return `
             <div class="step-card ${step.cost >= 35 ? 'warning' : ''}">
                 <div class="step-num">${i + 1}</div>
                 <div class="step-detail">
-                    <div class="step-title">${tIcon} ${step.targetName} + ${sIcon} ${step.sacrificeName}</div>
+                    <div class="step-title">${tIcon} ${tDisplay}</div>
+                    <div class="step-title" style="color:var(--text-3);font-weight:500;margin-top:1px">+ ${sIcon} ${sDisplay}</div>
                     <div class="step-meta">
                         <span>PWP: ${step.tPWP}+${step.sPWP}</span>
                         <span>Ench: ${step.enchCost}${step.incompatCost ? ` +${step.incompatCost} incompat` : ''}</span>
