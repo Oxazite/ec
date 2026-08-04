@@ -29,18 +29,35 @@ const ITEM_PNG_URLS = {
     book: MC_ASSETS_BASE + "book.png"
 };
 
+// The Minecraft Wiki blocks server-side downloads (403) but browsers can load
+// images directly. Use the exact URL the user provided.
+const ANVIL_WIKI_URL = "https://minecraft.wiki/images/Anvil_%28N%29_JE3.png?d438e";
+
 /**
- * Returns authentic 3D Isometric Minecraft Anvil PNG HTML
+ * Returns authentic 3D Isometric Minecraft Anvil icon HTML.
+ * Loads directly from the Minecraft Wiki (browsers are not blocked).
+ * Falls back to a locally bundled flat texture on error.
  */
 function getAnvilIconHTML(size = 24) {
-    return `<img src="assets/anvil.png" width="${size}" height="${size}" class="mc-sprite mc-anvil-img" alt="Anvil" />`;
+    return `<img src="${ANVIL_WIKI_URL}" width="${size}" height="${size}" class="mc-sprite mc-anvil-img" alt="Anvil" crossorigin="anonymous" onerror="this.onerror=null;this.src='assets/anvil_top.png';" />`;
 }
 
 /**
- * Returns animated Minecraft XP Orb HTML
+ * Returns animated Minecraft XP Orb HTML.
+ *
+ * The official experience_orb.png texture is a 64x64 spritesheet with a 4x4
+ * grid of 16x16 frames. Each frame represents a different XP value color tier.
+ * We animate by stepping through background-position using CSS.
+ *
+ * The animation cycles through all 16 frames (left-to-right, top-to-bottom)
+ * creating the authentic color-shifting effect seen in-game.
  */
 function getXPOrbIconHTML(size = 20) {
-    return `<span class="mc-xp-orb-wrapper"><img src="assets/xp_orb.png" width="${size}" height="${size}" class="mc-sprite mc-xp-orb-img" alt="XP Orb" /></span>`;
+    // We use a <span> with background-image spritesheet animation
+    // The sprite is 4 cols x 4 rows of 16x16 frames = 64x64 total
+    // At display size, we scale it: background-size = 4*size x 4*size
+    const bgSize = size * 4;
+    return `<span class="mc-xp-orb-sprite" style="width:${size}px;height:${size}px;background-size:${bgSize}px ${bgSize}px;" title="Min XP"></span>`;
 }
 
 /**
@@ -54,7 +71,7 @@ function getBookTextureURL(enchantments = {}) {
 
     const [enchId, lvl] = entries[0];
     const levelNum = Math.max(1, parseInt(lvl) || 1);
-    
+
     return `assets/books/${enchId}_${levelNum}.png`;
 }
 

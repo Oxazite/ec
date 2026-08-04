@@ -125,33 +125,54 @@ header p {
     white-space: nowrap;
 }
 
-.mc-xp-orb-wrapper {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/*
+ * XP Orb: CSS spritesheet animation
+ * The official experience_orb.png is a 4×4 grid of 16×16 frames (64×64 total).
+ * We step through all 16 frames to create the authentic color-cycling animation.
+ * At display, background-size is set inline to 4×displaySize per axis.
+ *
+ * Sprite layout (row-major, left→right, top→bottom):
+ *   Frame  0..3  = row 0 (y=0)
+ *   Frame  4..7  = row 1 (y=-1*size)
+ *   Frame  8..11 = row 2 (y=-2*size)
+ *   Frame 12..15 = row 3 (y=-3*size)
+ *
+ * We animate background-position through all 16 positions.
+ */
+.mc-xp-orb-sprite {
+    display: inline-block;
     vertical-align: middle;
-    animation: mc-xp-orb-shimmer 3s ease-in-out infinite;
-}
-
-.mc-xp-orb-img {
-    object-fit: contain;
+    background-image: url('assets/xp_orb.png');
+    background-repeat: no-repeat;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    animation: mc-xp-orb-frames 2s steps(1) infinite;
+    filter: drop-shadow(0 0 4px rgba(132,204,22,0.8));
 }
 
-@keyframes mc-xp-orb-shimmer {
-    0% { filter: hue-rotate(0deg) drop-shadow(0 0 3px #84cc16); transform: scale(1) rotate(0deg); }
-    25% { filter: hue-rotate(90deg) drop-shadow(0 0 5px #06b6d4); transform: scale(1.1) rotate(90deg); }
-    50% { filter: hue-rotate(180deg) drop-shadow(0 0 5px #a855f7); transform: scale(1.2) rotate(180deg); }
-    75% { filter: hue-rotate(270deg) drop-shadow(0 0 5px #f43f5e); transform: scale(1.1) rotate(270deg); }
-    100% { filter: hue-rotate(360deg) drop-shadow(0 0 3px #84cc16); transform: scale(1) rotate(360deg); }
+/* Step through all 16 frames of the 4×4 spritesheet */
+@keyframes mc-xp-orb-frames {
+    0%      { background-position: 0%    0%;      }
+    6.25%   { background-position: -100% 0%;      }
+    12.5%   { background-position: -200% 0%;      }
+    18.75%  { background-position: -300% 0%;      }
+    25%     { background-position: 0%    -100%;   }
+    31.25%  { background-position: -100% -100%;   }
+    37.5%   { background-position: -200% -100%;   }
+    43.75%  { background-position: -300% -100%;   }
+    50%     { background-position: 0%    -200%;   }
+    56.25%  { background-position: -100% -200%;   }
+    62.5%   { background-position: -200% -200%;   }
+    68.75%  { background-position: -300% -200%;   }
+    75%     { background-position: 0%    -300%;   }
+    81.25%  { background-position: -100% -300%;   }
+    87.5%   { background-position: -200% -300%;   }
+    93.75%  { background-position: -300% -300%;   }
 }
 
 .mc-anvil-img {
     vertical-align: middle;
     object-fit: contain;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
     filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
 }
 
