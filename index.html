@@ -3,589 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Prior Work Penalty & God Gear Calculator</title>
-    <meta name="description" content="Systematic Minecraft Anvil Prior Work Penalty (PWP) Calculator and God Gear Combination Optimizer with exact math algorithms for 1.21.">
-    <!-- Google Fonts -->
+    <title>Anvil Optimizer — Minecraft 1.21+ Enchantment Combiner</title>
+    <meta name="description" content="Find the optimal anvil combination order for your Minecraft items and enchanted books. Minimize XP cost or Prior Work Penalty.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="logo-group">
-                <div class="anvil-icon-badge">⚒️</div>
+    <div class="app">
+        <!-- ── Header ───────────────────────────────── -->
+        <header>
+            <div class="title-group">
+                <div class="icon">⚒️</div>
                 <div>
-                    <h1>Minecraft Anvil Mechanics & PWP Calculator</h1>
-                    <p class="subtitle">Systematic Anvil Prior Work Penalty, Combination Optimizer & XP Math (Minecraft 1.21+)</p>
+                    <h1>Anvil Optimizer</h1>
+                    <p>Minecraft 1.21+ · Optimal Enchantment Combination Calculator</p>
                 </div>
             </div>
-            
-            <div class="edition-toggle-container">
-                <span class="toggle-label">Game Edition:</span>
-                <div class="segmented-control">
-                    <button id="edition-java" class="edition-btn active" data-edition="java">Java Edition</button>
-                    <button id="edition-bedrock" class="edition-btn" data-edition="bedrock">Bedrock Edition</button>
-                </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" data-mode="xp" id="mode-xp">⚡ Min XP</button>
+                <button class="mode-btn" data-mode="pwp" id="mode-pwp">🛡 Min PWP</button>
             </div>
         </header>
 
-        <!-- Navigation Tabs -->
-        <nav class="nav-tabs">
-            <button class="nav-tab active" data-tab="tab-optimizer">
-                <span class="tab-icon">⚡</span> God Gear Optimizer
-            </button>
-            <button class="nav-tab" data-tab="tab-simulator">
-                <span class="tab-icon">🧪</span> Single Step Anvil Simulator
-            </button>
-            <button class="nav-tab" data-tab="tab-inspector">
-                <span class="tab-icon">📊</span> PWP & Multipliers Inspector
-            </button>
-            <button class="nav-tab" data-tab="tab-xp">
-                <span class="tab-icon">💎</span> XP Points & Level Calculator
-            </button>
-        </nav>
+        <!-- ── Two-Panel Layout ─────────────────────── -->
+        <div class="main-grid">
+            <!-- LEFT: Inventory Input -->
+            <aside class="panel inventory-panel">
+                <div class="panel-header">
+                    <h2>Your Inventory</h2>
+                    <span id="item-count" style="font-size:0.72rem;color:var(--text-3)">0 items</span>
+                </div>
+                <div class="panel-body" id="inventory-body">
+                    <div id="inventory-list">
+                        <!-- Item cards rendered dynamically -->
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn" id="btn-add-item">⚔️ Add Item</button>
+                        <button class="btn" id="btn-add-book">📗 Add Book</button>
+                    </div>
+                    <button class="btn btn-calculate" id="btn-calculate">▶ Calculate Optimal Path</button>
+                </div>
+            </aside>
 
-        <!-- Main Content Panes -->
-        <main class="tab-content">
-            <!-- TAB 1: GOD GEAR OPTIMIZER -->
-            <section id="tab-optimizer" class="tab-pane active">
-                <div class="pane-grid">
-                    <!-- Left Config Panel -->
-                    <div class="card config-card">
-                        <div class="card-header">
-                            <h2>1. Select Gear & Target Enchantments</h2>
-                            <span class="badge badge-accent">Optimal Tree Solver</span>
-                        </div>
-                        <div class="card-body">
-                            <!-- Input Mode Toggle -->
-                            <div class="form-group">
-                                <label>Optimizer Input Mode:</label>
-                                <div class="segmented-control">
-                                    <button type="button" id="opt-mode-standard" class="edition-btn active">Target Enchantments</button>
-                                    <button type="button" id="opt-mode-custom" class="edition-btn">Custom Books Inventory</button>
-                                </div>
-                            </div>
-
-                            <!-- Preset Loader Button -->
-                            <div class="form-group" style="margin-top: -0.5rem; margin-bottom: 1rem;">
-                                <button type="button" id="btn-load-preset-boots" class="btn btn-secondary btn-sm btn-block">
-                                    💡 Load Example Setup (7-Enchantment Boots Scenario)
-                                </button>
-                            </div>
-
-                            <!-- Item Type Selector -->
-                            <div class="form-group">
-                                <label for="opt-item-type">Base Item Type:</label>
-                                <select id="opt-item-type" class="form-control">
-                                    <optgroup label="Weapons & Combat">
-                                        <option value="sword" selected>Sword (Diamond / Netherite)</option>
-                                        <option value="mace">Mace (1.21 Heavy Weapon)</option>
-                                        <option value="bow">Bow</option>
-                                        <option value="crossbow">Crossbow</option>
-                                        <option value="trident">Trident</option>
-                                        <option value="axe">Axe (Combat & Tool)</option>
-                                        <option value="shield">Shield</option>
-                                    </optgroup>
-                                    <optgroup label="Armor">
-                                        <option value="helmet">Helmet</option>
-                                        <option value="chestplate">Chestplate</option>
-                                        <option value="leggings">Leggings</option>
-                                        <option value="boots">Boots</option>
-                                        <option value="elytra">Elytra</option>
-                                    </optgroup>
-                                    <optgroup label="Tools & Utilities">
-                                        <option value="pickaxe">Pickaxe</option>
-                                        <option value="shovel">Shovel</option>
-                                        <option value="hoe">Hoe</option>
-                                        <option value="fishing_rod">Fishing Rod</option>
-                                        <option value="flint_and_steel">Flint and Steel</option>
-                                        <option value="shears">Shears</option>
-                                        <option value="brush">Brush</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-
-                            <!-- Base Item Prior Work Penalty / Uses -->
-                            <div class="form-group">
-                                <label for="opt-base-uses">Base Item Previous Anvil Uses:</label>
-                                <div class="input-with-hint">
-                                    <select id="opt-base-uses" class="form-control">
-                                        <option value="0" selected>0 uses (Penalty: 0 levels)</option>
-                                        <option value="1">1 use (Penalty: 1 level)</option>
-                                        <option value="2">2 uses (Penalty: 3 levels)</option>
-                                        <option value="3">3 uses (Penalty: 7 levels)</option>
-                                        <option value="4">4 uses (Penalty: 15 levels)</option>
-                                        <option value="5">5 uses (Penalty: 31 levels)</option>
-                                    </select>
-                                    <small class="form-hint">Fresh crafted/looted gear has 0 uses. Grindstone resets this to 0.</small>
-                                </div>
-                            </div>
-
-                            <!-- SECTION A: Standard Desired Enchantments Checkboxes -->
-                            <div id="section-standard-mode" class="form-group">
-                                <div class="section-title-row">
-                                    <label>Desired Final Enchantments:</label>
-                                    <button type="button" id="opt-select-all" class="btn-text">Select Max Recommended</button>
-                                </div>
-                                <div id="opt-enchantment-list" class="enchantment-grid">
-                                    <!-- Populated via JavaScript based on chosen item type -->
-                                </div>
-                            </div>
-
-                            <!-- SECTION B: Custom Inventory Mode (Multi-Enchant Books) -->
-                            <div id="section-custom-mode" class="form-group hidden">
-                                <div class="section-title-row">
-                                    <label>Available Books in Inventory:</label>
-                                    <button type="button" id="btn-add-custom-book" class="btn-text">+ Add Custom Book</button>
-                                </div>
-                                <div id="custom-books-list" class="custom-books-container">
-                                    <!-- Dynamic custom book cards rendered here -->
-                                </div>
-                            </div>
-
-                            <!-- Ignore Incompatibility Checkbox -->
-                            <div class="form-group">
-                                <label class="checkbox-container">
-                                    <input type="checkbox" id="opt-ignore-incompatibility">
-                                    <span class="checkmark"></span>
-                                    Ignore Incompatible Enchantments Check (Allow Illegal Combos)
-                                </label>
-                            </div>
-
-                            <!-- Solve Button -->
-                            <button id="btn-run-optimizer" class="btn btn-primary btn-block btn-lg">
-                                ⚡ Calculate Optimal Combination Tree
-                            </button>
-                        </div>
+            <!-- RIGHT: Combination Protocol -->
+            <section class="panel protocol-panel">
+                <div class="panel-header">
+                    <h2>Combination Protocol</h2>
+                    <span id="protocol-status" style="font-size:0.72rem;color:var(--text-3)"></span>
+                </div>
+                <div class="panel-body" id="protocol-body">
+                    <!-- Empty State -->
+                    <div id="protocol-empty" class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <h3>No Protocol Yet</h3>
+                        <p>Add your items and books on the left, then click Calculate to see the optimal combination order.</p>
                     </div>
 
-                    <!-- Right Solution Display Panel -->
-                    <div class="card solution-card">
-                        <div class="card-header">
-                            <h2>2. Optimal Combination Plan</h2>
-                            <div id="solution-summary-badges" class="summary-badges-container">
-                                <!-- Dynamic badges (Total Cost, Max Step Cost, Status) -->
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="optimizer-empty-state" class="empty-state">
-                                <div class="empty-icon">🗺️</div>
-                                <h3>No Combination Generated Yet</h3>
-                                <p>Select an item and your desired enchantments on the left, then click <strong>Calculate Optimal Combination Tree</strong> to get step-by-step instructions avoiding the 39-level "Too Expensive!" limit.</p>
-                            </div>
-
-                            <div id="optimizer-results" class="results-container hidden">
-                                <!-- Key Metric Cards -->
-                                <div class="metrics-row">
-                                    <div class="metric-card">
-                                        <span class="metric-label">Total XP Levels Required</span>
-                                        <span id="metric-total-levels" class="metric-value highlight-emerald">0</span>
-                                        <span id="metric-total-xp" class="metric-sub">0 XP points</span>
-                                    </div>
-                                    <div class="metric-card">
-                                        <span class="metric-label">Max Single Step Cost</span>
-                                        <span id="metric-max-step" class="metric-value">0 lvl</span>
-                                        <span id="metric-max-step-status" class="metric-sub text-success">Safe (&le; 39)</span>
-                                    </div>
-                                    <div class="metric-card">
-                                        <span class="metric-label">Total Anvil Steps</span>
-                                        <span id="metric-total-steps" class="metric-value">0</span>
-                                        <span class="metric-sub">Binary Merge Tree</span>
-                                    </div>
-                                    <div class="metric-card">
-                                        <span class="metric-label">Final Item PWP</span>
-                                        <span id="metric-final-pwp" class="metric-value">0 lvl</span>
-                                        <span id="metric-final-uses" class="metric-sub">0 uses</span>
-                                    </div>
-                                </div>
-
-                                <!-- Step-by-Step Instructions -->
-                                <div class="steps-section">
-                                    <h3>Step-by-Step Combination Protocol</h3>
-                                    <p class="section-desc">Follow these exact instructions in order. Always place the target item/book in the <strong>Left Slot</strong> and the sacrifice book/item in the <strong>Right Slot</strong>.</p>
-                                    <div id="steps-timeline" class="steps-timeline">
-                                        <!-- Step cards rendered here -->
-                                    </div>
-                                </div>
-
-                                <!-- Visual Tree Representation -->
-                                <div class="tree-section">
-                                    <h3>Combination Tree Visualizer</h3>
-                                    <div id="tree-container" class="tree-visualizer">
-                                        <!-- Interactive SVG/CSS tree rendered here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Results (hidden initially) -->
+                    <div id="protocol-results" class="hidden">
+                        <div id="protocol-warnings"></div>
+                        <div id="protocol-summary" class="protocol-summary"></div>
+                        <div id="protocol-steps" class="step-list"></div>
                     </div>
+
+                    <!-- Error state -->
+                    <div id="protocol-error" class="hidden"></div>
                 </div>
             </section>
-
-            <!-- TAB 2: SINGLE STEP ANVIL SIMULATOR -->
-            <section id="tab-simulator" class="tab-pane">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Anvil Combination Laboratory</h2>
-                        <span class="badge">Exact Mechanics Tester</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="anvil-lab-grid">
-                            <!-- Left Item Slot -->
-                            <div class="anvil-slot-card target-slot">
-                                <div class="slot-header">
-                                    <span class="slot-tag">Left Slot (Target Item)</span>
-                                    <span id="sim-target-pwp-display" class="badge badge-info">PWP: 0 lvl</span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="sim-target-type">Item Category:</label>
-                                    <select id="sim-target-type" class="form-control">
-                                        <option value="weapon" selected>Tool / Armor / Weapon</option>
-                                        <option value="book">Enchanted Book</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="sim-target-uses">Previous Anvil Uses (N<sub>target</sub>):</label>
-                                    <input type="number" id="sim-target-uses" class="form-control" min="0" max="10" value="0">
-                                    <small class="form-hint">Penalty = 2<sup>N</sup> - 1 levels</small>
-                                </div>
-                                <div class="form-group">
-                                    <label>Enchantments on Target Item:</label>
-                                    <div id="sim-target-enchantments" class="sim-enchant-builder">
-                                        <!-- Dynamic rows for target enchantments -->
-                                    </div>
-                                    <button id="btn-add-target-enchant" class="btn btn-secondary btn-sm">+ Add Enchantment</button>
-                                </div>
-                                <div class="form-group">
-                                    <label class="checkbox-container">
-                                        <input type="checkbox" id="sim-rename-checkbox">
-                                        <span class="checkmark"></span>
-                                        Rename Item (+1 Level cost)
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label for="sim-material-repair">Material Repair Units (0 - 4):</label>
-                                    <input type="number" id="sim-material-repair" class="form-control" min="0" max="4" value="0">
-                                </div>
-                            </div>
-
-                            <!-- Plus Sign -->
-                            <div class="anvil-plus-divider">
-                                <span>+</span>
-                            </div>
-
-                            <!-- Right Item Slot -->
-                            <div class="anvil-slot-card sacrifice-slot">
-                                <div class="slot-header">
-                                    <span class="slot-tag">Right Slot (Sacrifice Item)</span>
-                                    <span id="sim-sacrifice-pwp-display" class="badge badge-info">PWP: 0 lvl</span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="sim-sacrifice-type">Sacrifice Category:</label>
-                                    <select id="sim-sacrifice-type" class="form-control">
-                                        <option value="book" selected>Enchanted Book</option>
-                                        <option value="item">Matching Tool / Armor Item</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="sim-sacrifice-uses">Previous Anvil Uses (N<sub>sacrifice</sub>):</label>
-                                    <input type="number" id="sim-sacrifice-uses" class="form-control" min="0" max="10" value="0">
-                                    <small class="form-hint">Penalty = 2<sup>N</sup> - 1 levels</small>
-                                </div>
-                                <div class="form-group">
-                                    <label>Enchantments on Sacrifice Item:</label>
-                                    <div id="sim-sacrifice-enchantments" class="sim-enchant-builder">
-                                        <!-- Dynamic rows for sacrifice enchantments -->
-                                    </div>
-                                    <button id="btn-add-sacrifice-enchant" class="btn btn-secondary btn-sm">+ Add Enchantment</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Mathematical Cost Output Breakdown -->
-                        <div class="anvil-output-container">
-                            <div class="output-header-row">
-                                <h3>Anvil Calculation Result & Mathematical Breakdown</h3>
-                                <div id="sim-too-expensive-badge" class="badge badge-success">Valid Operation (&le; 39 levels)</div>
-                            </div>
-
-                            <div class="anvil-results-row">
-                                <!-- Column 1: Cost Breakdown -->
-                                <div class="breakdown-grid">
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">Target Prior Work Penalty:</span>
-                                        <span id="calc-target-pwp" class="breakdown-value">0 levels</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">Sacrifice Prior Work Penalty:</span>
-                                        <span id="calc-sacrifice-pwp" class="breakdown-value">0 levels</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">Enchantment Transfer Costs:</span>
-                                        <span id="calc-enchant-cost" class="breakdown-value">0 levels</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">Incompatible Penalty Cost:</span>
-                                        <span id="calc-incompatible-cost" class="breakdown-value">0 levels</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">Repair / Rename Cost:</span>
-                                        <span id="calc-repair-rename-cost" class="breakdown-value">0 levels</span>
-                                    </div>
-                                </div>
-
-                                <!-- Column 2: Total Cost -->
-                                <div class="breakdown-item total-item">
-                                    <span class="breakdown-label">Total Anvil Cost</span>
-                                    <span id="calc-total-cost" class="breakdown-value highlight-emerald">0 Lvl</span>
-                                </div>
-
-                                <!-- Column 3: Resulting Item State -->
-                                <div class="resulting-item-box">
-                                    <h4>Resulting Item State:</h4>
-                                    <div class="result-stats">
-                                        <div class="stat">
-                                            <span class="stat-name">New Anvil Uses (N):</span>
-                                            <span id="res-anvil-uses" class="stat-val">1 use</span>
-                                        </div>
-                                        <div class="stat">
-                                            <span class="stat-name">New PWP:</span>
-                                            <span id="res-pwp" class="stat-val">1 level (2<sup>1</sup> - 1)</span>
-                                        </div>
-                                        <div class="stat">
-                                            <span class="stat-name">Enchantments:</span>
-                                            <span id="res-enchants-list" class="stat-val">None</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 3: PWP & MULTIPLIERS INSPECTOR -->
-            <section id="tab-inspector" class="tab-pane">
-                <div class="inspector-grid">
-                    <!-- PWP Formula Table Card -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Prior Work Penalty (PWP) Scaling Table</h2>
-                            <span class="badge">Formula: 2<sup>N</sup> - 1</span>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-intro">Each time an item is modified in an anvil, its internal <strong>Anvil Use Count</strong> increases by 1. When combining two items, the new item takes max(N<sub>A</sub>, N<sub>B</sub>) + 1.</p>
-                            <div class="table-scroll-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Anvil Uses (N)</th>
-                                        <th>PWP Level Cost (2<sup>N</sup> - 1)</th>
-                                        <th>Base Status</th>
-                                        <th>Modifiable?</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><strong>0</strong></td>
-                                        <td>0 levels</td>
-                                        <td>Fresh / Reset</td>
-                                        <td><span class="text-success">✔ Fully Modifiable</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>1</strong></td>
-                                        <td>1 level</td>
-                                        <td>1st Anvil Use</td>
-                                        <td><span class="text-success">✔ Fully Modifiable</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>2</strong></td>
-                                        <td>3 levels</td>
-                                        <td>2nd Anvil Use</td>
-                                        <td><span class="text-success">✔ Fully Modifiable</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>3</strong></td>
-                                        <td>7 levels</td>
-                                        <td>3rd Anvil Use</td>
-                                        <td><span class="text-success">✔ Fully Modifiable</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>4</strong></td>
-                                        <td>15 levels</td>
-                                        <td>4th Anvil Use</td>
-                                        <td><span class="text-warning">⚠️ High Penalty</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>5</strong></td>
-                                        <td>31 levels</td>
-                                        <td>5th Anvil Use</td>
-                                        <td><span class="text-danger">🚨 Risk of "Too Expensive!"</span></td>
-                                    </tr>
-                                    <tr class="table-row-danger">
-                                        <td><strong>6</strong></td>
-                                        <td>63 levels</td>
-                                        <td>6th Anvil Use</td>
-                                        <td><span class="text-danger">❌ ALWAYS "Too Expensive!" (&ge; 40)</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            </div>
-
-                            <div class="info-alert">
-                                <h4>💡 How to Reset Prior Work Penalty:</h4>
-                                <ul>
-                                    <li><strong>Grindstone:</strong> Completely resets Anvil Use Count back to <strong>0</strong>. Note: Removes all enchantments (except Curses) and grants XP.</li>
-                                    <li><strong>Crafting Grid Repair:</strong> Placing two damaged identical items in a crafting grid resets PWP to <strong>0</strong>, but removes all enchantments.</li>
-                                    <li><strong>Smithing Table:</strong> Upgrading Diamond gear to Netherite using a Netherite Upgrade Template preserves existing enchantments and <strong>does NOT increase PWP</strong>!</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Multipliers Reference Card -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Minecraft 1.21 Enchantment Multipliers & Rarity</h2>
-                            <span class="badge badge-info">Official Wiki Weights</span>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-intro">Enchantment cost on the anvil equals <strong>Enchantment Level &times; Multiplier</strong>. Books have <strong>half</strong> the multiplier of items!</p>
-                            <div class="search-filter-box">
-                                <input type="text" id="inspector-search" class="form-control" placeholder="🔍 Search enchantment (e.g. Sharpness, Wind Burst, Mending)...">
-                            </div>
-                            <div class="table-scroll-wrapper">
-                                <table class="data-table" id="multipliers-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Enchantment</th>
-                                            <th>Max Level</th>
-                                            <th>Book Multiplier</th>
-                                            <th>Item Multiplier</th>
-                                            <th>Incompatible Group</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="multipliers-tbody">
-                                        <!-- Rendered via JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 4: XP POINTS & LEVEL CALCULATOR -->
-            <section id="tab-xp" class="tab-pane">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Minecraft Experience (XP) Mathematics</h2>
-                        <span class="badge badge-accent">Exact Level-to-Points Curves</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="xp-calc-grid">
-                            <!-- Converter Form -->
-                            <div class="xp-form-card">
-                                <h3>Level & XP Points Converter</h3>
-                                <div class="form-group">
-                                    <label for="xp-start-level">Starting Level (L<sub>start</sub>):</label>
-                                    <input type="number" id="xp-start-level" class="form-control" min="0" max="500" value="0">
-                                </div>
-                                <div class="form-group">
-                                    <label for="xp-target-level">Target Level (L<sub>target</sub>):</label>
-                                    <input type="number" id="xp-target-level" class="form-control" min="0" max="500" value="30">
-                                </div>
-                                <div class="xp-results-box">
-                                    <div class="xp-metric">
-                                        <span class="xp-metric-label">XP Points Needed (L<sub>start</sub> &rarr; L<sub>target</sub>):</span>
-                                        <span id="xp-diff-points" class="xp-metric-val highlight-emerald">1,395 XP</span>
-                                    </div>
-                                    <div class="xp-metric">
-                                        <span class="xp-metric-label">Total XP Points at Target Level:</span>
-                                        <span id="xp-total-points" class="xp-metric-val">1,395 XP</span>
-                                    </div>
-                                    <div class="xp-metric">
-                                        <span class="xp-metric-label">Approx. Mob Kills Needed (Zombies / Skeletons @ 5 XP):</span>
-                                        <span id="xp-mobs-needed" class="xp-metric-val">279 Mobs</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- XP Formula Explanation -->
-                            <div class="xp-info-card">
-                                <h3>Official Minecraft XP Formulas</h3>
-                                <p>In Minecraft, XP required per level increases non-linearly. Spending 30 levels from Level 30 costs far fewer XP points than spending 30 levels from Level 50!</p>
-                                
-                                <div class="formula-block">
-                                    <h4>Level 0 to 16:</h4>
-                                    <code>XP to next level = 2 &times; Level + 7</code><br>
-                                    <code>Total XP = Level<sup>2</sup> + 6 &times; Level</code>
-                                </div>
-
-                                <div class="formula-block">
-                                    <h4>Level 17 to 31:</h4>
-                                    <code>XP to next level = 5 &times; Level - 38</code><br>
-                                    <code>Total XP = 2.5 &times; Level<sup>2</sup> - 40.5 &times; Level + 360</code>
-                                </div>
-
-                                <div class="formula-block">
-                                    <h4>Level 32+:</h4>
-                                    <code>XP to next level = 9 &times; Level - 158</code><br>
-                                    <code>Total XP = 4.5 &times; Level<sup>2</sup> - 162.5 &times; Level + 2220</code>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Footer -->
-        <footer class="app-footer">
-            <p>Minecraft Prior Work Penalty & God Gear Calculator &bull; Systematic 1.21 Anvil Mechanics Engine</p>
-        </footer>
-    </div>
-
-    <!-- Custom Book Builder Modal -->
-    <div id="modal-custom-book" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3 id="modal-book-title">Add Custom Book to Inventory</h3>
-                <button type="button" id="btn-close-modal" class="btn-text" style="font-size: 1.5rem;">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="modal-book-name">Book Label / Name:</label>
-                    <input type="text" id="modal-book-name" class="form-control" placeholder="e.g. Book 1: Protection IV + Mending">
-                </div>
-                <div class="form-group">
-                    <label for="modal-book-uses">Previous Anvil Uses (N):</label>
-                    <select id="modal-book-uses" class="form-control">
-                        <option value="0" selected>0 uses (Penalty: 0 levels)</option>
-                        <option value="1">1 use (Penalty: 1 level)</option>
-                        <option value="2">2 uses (Penalty: 3 levels)</option>
-                        <option value="3">3 uses (Penalty: 7 levels)</option>
-                        <option value="4">4 uses (Penalty: 15 levels)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Enchantments on this Book:</label>
-                    <div id="modal-enchantments-builder" class="sim-enchant-builder">
-                        <!-- Dynamic enchantment rows added here -->
-                    </div>
-                    <button type="button" id="btn-modal-add-ench" class="btn btn-secondary btn-sm">+ Add Enchantment</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="btn-cancel-modal" class="btn btn-secondary">Cancel</button>
-                <button type="button" id="btn-save-modal-book" class="btn btn-primary">Save Book to Inventory</button>
-            </div>
         </div>
     </div>
-
-    <!-- Application Script -->
     <script src="app.js"></script>
 </body>
 </html>
