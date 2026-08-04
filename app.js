@@ -413,12 +413,15 @@ function removeEnchantment(uid, enchId) {
 }
 
 function getAvailableEnchantments(item) {
+    let list;
     if (item.isBook) {
         // Books can have any enchantment
-        return ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments));
+        list = ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments));
+    } else {
+        // Items: filter by category
+        list = ENCHANTMENTS_DB.filter(e => e.cats.includes(item.category) && !(e.id in item.enchantments));
     }
-    // Items: filter by category
-    return ENCHANTMENTS_DB.filter(e => e.cats.includes(item.category) && !(e.id in item.enchantments));
+    return list.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function updateItemCategory(uid, newCat) {
@@ -505,9 +508,9 @@ function renderInventory() {
             if (!info) return '';
             const level = item.enchantments[enchId];
 
-            // Build options: current ench + all available (to allow switching)
+            // Build options: current ench + all available (sorted alphabetically)
             const otherAvailable = available.filter(e => e.id !== enchId);
-            const allOptions = [info, ...otherAvailable];
+            const allOptions = [info, ...otherAvailable].sort((a, b) => a.name.localeCompare(b.name));
 
             let levelOptions = '';
             for (let l = 1; l <= info.maxLevel; l++) {
