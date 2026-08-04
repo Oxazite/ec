@@ -272,6 +272,12 @@ function findOptimal(items, mode) {
                 const res = calcStep(target, sacrifice);
                 if (res.tooExpensive) continue;
 
+                // Skip if no enchantments were actually transferred or upgraded
+                // (don't waste an anvil use for zero benefit)
+                const enchsChanged = Object.keys(res.resultEnchs).length !== Object.keys(target.enchantments).length ||
+                    Object.entries(res.resultEnchs).some(([k, v]) => (target.enchantments[k] || 0) !== v);
+                if (!enchsChanged) continue;
+
                 const newItem = {
                     id: `${target.id}+${sacrifice.id}`,
                     name: target.isBook ? 'Combined Book' : target.name,
@@ -551,15 +557,32 @@ function calculate() {
         return;
     }
 
-    // Build items for optimizer
-    const optItems = inventory.map(item => ({
-        id: `${item.isBook ? 'Book' : capitalize(item.category)}_${item.uid}`,
-        name: item.isBook ? bookName(item) : capitalize(item.category),
-        anvilUses: item.anvilUses,
-        isBook: item.isBook,
-        enchantments: { ...item.enchantments },
-        category: item.category
-    }));
+    // Build items for optimizer — number duplicates (Sword #1, Sword #2)
+    const catCounts = {};
+    const catIndices = {};
+    for (const item of inventory) {
+        const key = item.isBook ? 'book' : item.category;
+        catCounts[key] = (catCounts[key] || 0) + 1;
+    }
+    const optItems = inventory.map(item => {
+        const key = item.isBook ? 'book' : item.category;
+        catIndices[key] = (catIndices[key] || 0) + 1;
+        const needsNum = catCounts[key] > 1;
+        let name;
+        if (item.isBook) {
+            name = needsNum ? `${bookName(item)} (#${catIndices[key]})` : bookName(item);
+        } else {
+            name = needsNum ? `${capitalize(item.category)} #${catIndices[key]}` : capitalize(item.category);
+        }
+        return {
+            id: `${item.isBook ? 'Book' : capitalize(item.category)}_${item.uid}`,
+            name,
+            anvilUses: item.anvilUses,
+            isBook: item.isBook,
+            enchantments: { ...item.enchantments },
+            category: item.category
+        };
+    });
 
     statusEl.textContent = 'Computing...';
 
