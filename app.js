@@ -218,42 +218,67 @@ function getStateKey(items) {
  * mode: 'xp' (minimize total XP cost) | 'pwp' (minimize final anvil uses, tiebreak by XP)
  */
 function findOptimal(items, mode, ignoreIncompatibility = false) {
-    if (items.length < 2) return null;
+    if (items.length < 2) return [];
 
-    let bestSolution = null;
+    let bestTotalCost = Infinity;
+    let bestFinalUses = Infinity;
+    let bestSolutions = [];
     const memo = new Map();
 
-    function isBetter(candidate) {
-        if (!bestSolution) return true;
+    function evaluateCandidate(cand) {
         if (mode === 'pwp') {
-            if (candidate.finalUses !== bestSolution.finalUses)
-                return candidate.finalUses < bestSolution.finalUses;
-            return candidate.totalCost < bestSolution.totalCost;
+            if (cand.finalUses < bestFinalUses) {
+                bestFinalUses = cand.finalUses;
+                bestTotalCost = cand.totalCost;
+                bestSolutions = [cand];
+            } else if (cand.finalUses === bestFinalUses) {
+                if (cand.totalCost < bestTotalCost) {
+                    bestTotalCost = cand.totalCost;
+                    bestSolutions = [cand];
+                } else if (cand.totalCost === bestTotalCost) {
+                    const sig = cand.steps.map(s => `${s.targetId}+${s.sacrificeId}`).join(';');
+                    if (!bestSolutions.some(s => s.steps.map(x => `${x.targetId}+${x.sacrificeId}`).join(';') === sig)) {
+                        bestSolutions.push(cand);
+                    }
+                }
+            }
+        } else {
+            // mode === 'xp'
+            if (cand.totalCost < bestTotalCost) {
+                bestTotalCost = cand.totalCost;
+                bestFinalUses = cand.finalUses;
+                bestSolutions = [cand];
+            } else if (cand.totalCost === bestTotalCost) {
+                if (cand.finalUses < bestFinalUses) {
+                    bestFinalUses = cand.finalUses;
+                    bestSolutions = [cand];
+                } else if (cand.finalUses === bestFinalUses) {
+                    const sig = cand.steps.map(s => `${s.targetId}+${s.sacrificeId}`).join(';');
+                    if (!bestSolutions.some(s => s.steps.map(x => `${x.targetId}+${x.sacrificeId}`).join(';') === sig)) {
+                        bestSolutions.push(cand);
+                    }
+                }
+            }
         }
-        return candidate.totalCost < bestSolution.totalCost;
     }
 
     function search(current, accCost, maxStep, steps) {
-        // Prune: in XP mode, prune if accumulated cost >= best total
-        // In PWP mode, skip this pruning (higher cost paths may yield fewer uses)
-        if (mode === 'xp' && bestSolution && accCost >= bestSolution.totalCost) return;
+        if (mode === 'xp' && accCost > bestTotalCost) return;
 
         const key = getStateKey(current);
-        if (memo.has(key) && memo.get(key) <= accCost) return;
+        if (memo.has(key) && memo.get(key) < accCost) return;
         memo.set(key, accCost);
 
-        // Base case: one item left
         if (current.length === 1) {
             const final = current[0];
             if (!final.isBook) {
-                const candidate = {
+                evaluateCandidate({
                     finalItem: final,
                     totalCost: accCost,
                     maxStepCost: maxStep,
                     finalUses: final.anvilUses,
                     steps: [...steps]
-                };
-                if (isBetter(candidate)) bestSolution = candidate;
+                });
             }
             return;
         }
@@ -265,17 +290,12 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
                 const target = current[i];
                 const sacrifice = current[j];
 
-                // Can't put a book in left slot with an item in right slot
                 if (target.isBook && !sacrifice.isBook) continue;
-
-                // Two non-book items can only combine if same category
                 if (!target.isBook && !sacrifice.isBook && target.category !== sacrifice.category) continue;
 
                 const res = calcStep(target, sacrifice, ignoreIncompatibility);
                 if (res.tooExpensive) continue;
 
-                // Skip if no enchantments were actually transferred or upgraded
-                // (don't waste an anvil use for zero benefit)
                 const enchsChanged = Object.keys(res.resultEnchs).length !== Object.keys(target.enchantments).length ||
                     Object.entries(res.resultEnchs).some(([k, v]) => (target.enchantments[k] || 0) !== v);
                 if (!enchsChanged) continue;
@@ -321,7 +341,7 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
     }
 
     search(items, 0, 0, []);
-    return bestSolution;
+    return bestSolutions;
 }
 
 
@@ -333,6 +353,17 @@ let inventory = [];
 let nextId = 1;
 let currentMode = 'xp';
 let lastSolution = null;
+let allSolutions = [];
+let currentSolutionIndex = 0;
+
+function scrollToBottom() {
+    setTimeout(() => {
+        const body = document.getElementById('inventory-body');
+        if (body) {
+            body.scrollTop = body.scrollHeight;
+        }
+    }, 10);
+}
 
 // ══════════════════════════════════════════════════════════════
 // UI: INVENTORY MANAGEMENT
@@ -351,6 +382,7 @@ function addItem(category = 'sword') {
         enchantments: {}
     });
     renderInventory();
+    scrollToBottom();
 }
 
 function addBook() {
@@ -408,6 +440,7 @@ function addBook() {
         enchantments: initialEnchs
     });
     renderInventory();
+    scrollToBottom();
 }
 
 function removeItem(uid) {
@@ -647,12 +680,15 @@ function calculate() {
     setTimeout(() => {
         const t0 = performance.now();
         const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
-        const solution = findOptimal(optItems, currentMode, allowConflicts);
+        const solutions = findOptimal(optItems, currentMode, allowConflicts);
         const dt = performance.now() - t0;
 
         statusEl.textContent = `${dt.toFixed(0)}ms`;
 
-        if (!solution) {
+        if (!solutions || solutions.length === 0) {
+            allSolutions = [];
+            currentSolutionIndex = 0;
+            lastSolution = null;
             emptyEl.classList.add('hidden');
             resultEl.classList.add('hidden');
             errorEl.classList.remove('hidden');
@@ -660,11 +696,13 @@ function calculate() {
             return;
         }
 
-        lastSolution = solution;
+        allSolutions = solutions;
+        currentSolutionIndex = 0;
+        lastSolution = allSolutions[0];
         emptyEl.classList.add('hidden');
         errorEl.classList.add('hidden');
         resultEl.classList.remove('hidden');
-        renderProtocol(solution);
+        renderProtocol();
     }, 10);
 }
 
@@ -676,7 +714,10 @@ function bookName(item) {
            (enchIds.length > 2 ? ` +${enchIds.length - 2}` : '');
 }
 
-function renderProtocol(solution) {
+function renderProtocol() {
+    if (!allSolutions || allSolutions.length === 0) return;
+    const solution = allSolutions[currentSolutionIndex];
+
     const summaryEl = document.getElementById('protocol-summary');
     const stepsEl = document.getElementById('protocol-steps');
     const warningsEl = document.getElementById('protocol-warnings');
@@ -708,7 +749,7 @@ function renderProtocol(solution) {
         </div>`;
 
     // Steps
-    stepsEl.innerHTML = solution.steps.map((step, i) => {
+    const stepsHtml = solution.steps.map((step, i) => {
         const costClass = step.cost >= 35 ? 'too-expensive' : step.cost >= 25 ? 'high-cost' : '';
         const tIcon = step.targetIsBook ? '📗' : '⚔️';
         const sIcon = step.sacrificeIsBook ? '📗' : '⚔️';
@@ -747,6 +788,24 @@ function renderProtocol(solution) {
                 <div class="step-cost ${costClass}">${step.cost} lvl</div>
             </div>`;
     }).join('');
+
+    let shuffleHtml = '';
+    if (allSolutions.length > 1) {
+        shuffleHtml = `
+            <div class="shuffle-container">
+                <button class="btn btn-shuffle" id="btn-shuffle" onclick="shuffleSolution()">
+                    🔀 Shuffle Alternative Protocol (${currentSolutionIndex + 1} of ${allSolutions.length})
+                </button>
+            </div>`;
+    }
+
+    stepsEl.innerHTML = stepsHtml + shuffleHtml;
+}
+
+function shuffleSolution() {
+    if (!allSolutions || allSolutions.length <= 1) return;
+    currentSolutionIndex = (currentSolutionIndex + 1) % allSolutions.length;
+    renderProtocol();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -764,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Conflict toggle
     document.getElementById('toggle-conflicts').addEventListener('change', () => {
-        if (lastSolution && inventory.length >= 2) {
+        if (inventory.length >= 2) {
             calculate();
         }
     });
@@ -779,8 +838,8 @@ function setMode(mode) {
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
     });
-    // Re-calculate if we have a solution
-    if (lastSolution && inventory.length >= 2) {
+    // Always auto-recalculate if inventory has 2+ items
+    if (inventory.length >= 2) {
         calculate();
     }
 }
