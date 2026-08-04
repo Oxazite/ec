@@ -364,6 +364,34 @@ input[type="number"] { width: 60px; }
     color: var(--text-1);
 }
 
+.toggle-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.76rem;
+    color: var(--text-2);
+    cursor: pointer;
+    margin-top: 0.4rem;
+    user-select: none;
+    transition: var(--transition);
+}
+
+.toggle-option:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--text-1);
+}
+
+.toggle-option input[type="checkbox"] {
+    accent-color: var(--emerald);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
 .btn-calculate {
     width: 100%;
     padding: 0.6rem 1rem;

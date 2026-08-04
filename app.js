@@ -144,7 +144,7 @@ function areIncompatible(idA, idB) {
  * Calculate a single anvil step cost.
  * Returns: { totalCost, enchCost, incompatCost, resultUses, resultEnchs, tooExpensive }
  */
-function calcStep(target, sacrifice) {
+function calcStep(target, sacrifice, ignoreIncompatibility = false) {
     const tPWP = getPWP(target.anvilUses);
     const sPWP = getPWP(sacrifice.anvilUses);
 
@@ -159,10 +159,12 @@ function calcStep(target, sacrifice) {
         // If target is an item (not book), skip enchantments not applicable to its category
         if (!target.isBook && target.category && !info.cats.includes(target.category)) continue;
 
-        // Check compatibility with all current target enchantments
+        // Check compatibility with all current target enchantments unless ignoreIncompatibility is true
         let incompat = false;
-        for (const tId of Object.keys(resultEnchs)) {
-            if (areIncompatible(enchId, tId)) { incompat = true; break; }
+        if (!ignoreIncompatibility) {
+            for (const tId of Object.keys(resultEnchs)) {
+                if (areIncompatible(enchId, tId)) { incompat = true; break; }
+            }
         }
 
         if (incompat) {
@@ -215,7 +217,7 @@ function getStateKey(items) {
  * Find optimal combination order.
  * mode: 'xp' (minimize total XP cost) | 'pwp' (minimize final anvil uses, tiebreak by XP)
  */
-function findOptimal(items, mode) {
+function findOptimal(items, mode, ignoreIncompatibility = false) {
     if (items.length < 2) return null;
 
     let bestSolution = null;
@@ -269,7 +271,7 @@ function findOptimal(items, mode) {
                 // Two non-book items can only combine if same category
                 if (!target.isBook && !sacrifice.isBook && target.category !== sacrifice.category) continue;
 
-                const res = calcStep(target, sacrifice);
+                const res = calcStep(target, sacrifice, ignoreIncompatibility);
                 if (res.tooExpensive) continue;
 
                 // Skip if no enchantments were actually transferred or upgraded
@@ -352,11 +354,15 @@ function addItem(category = 'sword') {
 }
 
 function addBook() {
+    const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
+
     // Find all enchantment IDs currently in inventory
     const usedEnchIds = new Set();
+    const existingEnchIds = [];
     for (const item of inventory) {
         for (const enchId of Object.keys(item.enchantments)) {
             usedEnchIds.add(enchId);
+            existingEnchIds.push(enchId);
         }
     }
 
@@ -365,13 +371,28 @@ function addBook() {
     let selectedEnch = null;
 
     if (gearItem) {
-        // Find first enchantment for this gear's category that hasn't been added yet
-        selectedEnch = ENCHANTMENTS_DB.find(e => e.cats.includes(gearItem.category) && !usedEnchIds.has(e.id));
+        // Find enchantments for this gear's category that haven't been added yet
+        const candidates = ENCHANTMENTS_DB.filter(e => e.cats.includes(gearItem.category) && !usedEnchIds.has(e.id));
+        if (allowConflicts) {
+            selectedEnch = candidates[0] || null;
+        } else {
+            // Must NOT conflict with any existing enchantment in inventory
+            selectedEnch = candidates.find(cand => {
+                return !existingEnchIds.some(existId => areIncompatible(cand.id, existId));
+            }) || null;
+        }
     }
 
     // Fallback if no gear item or all gear category enchantments used: pick any unused enchantment
     if (!selectedEnch) {
-        selectedEnch = ENCHANTMENTS_DB.find(e => !usedEnchIds.has(e.id));
+        const candidates = ENCHANTMENTS_DB.filter(e => !usedEnchIds.has(e.id));
+        if (allowConflicts) {
+            selectedEnch = candidates[0] || null;
+        } else {
+            selectedEnch = candidates.find(cand => {
+                return !existingEnchIds.some(existId => areIncompatible(cand.id, existId));
+            }) || null;
+        }
     }
 
     const initialEnchs = {};
@@ -625,7 +646,8 @@ function calculate() {
     // Run async to allow UI update
     setTimeout(() => {
         const t0 = performance.now();
-        const solution = findOptimal(optItems, currentMode);
+        const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
+        const solution = findOptimal(optItems, currentMode, allowConflicts);
         const dt = performance.now() - t0;
 
         statusEl.textContent = `${dt.toFixed(0)}ms`;
@@ -739,6 +761,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mode toggle
     document.getElementById('mode-xp').addEventListener('click', () => setMode('xp'));
     document.getElementById('mode-pwp').addEventListener('click', () => setMode('pwp'));
+
+    // Conflict toggle
+    document.getElementById('toggle-conflicts').addEventListener('change', () => {
+        if (lastSolution && inventory.length >= 2) {
+            calculate();
+        }
+    });
 
     // Start with one sword and one book for convenience
     addItem('sword');
