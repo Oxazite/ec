@@ -316,6 +316,8 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
                     sacrificeId: sacrifice.id,
                     targetIsBook: target.isBook,
                     sacrificeIsBook: sacrifice.isBook,
+                    targetCategory: target.category,
+                    sacrificeCategory: sacrifice.category,
                     targetUses: target.anvilUses,
                     sacrificeUses: sacrifice.anvilUses,
                     targetEnchs: { ...target.enchantments },
@@ -526,7 +528,7 @@ function renderInventory() {
     list.innerHTML = inventory.map(item => {
         const isBook = item.isBook;
         const catInfo = isBook ? null : ITEM_CAT_MAP.get(item.category);
-        const icon = isBook ? '📗' : (catInfo ? catInfo.icon : '❓');
+        const iconHTML = getItemIconHTML(item);
         const title = isBook ? 'Enchanted Book' : (catInfo ? catInfo.name : 'Item');
 
         // Category selector for items (not books)
@@ -537,7 +539,7 @@ function renderInventory() {
                     <label>Type</label>
                     <select onchange="updateItemCategory(${item.uid}, this.value)">
                         ${ITEM_CATEGORIES.map(c =>
-                            `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.icon} ${c.name}</option>`
+                            `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.name}</option>`
                         ).join('')}
                     </select>
                 </div>`;
@@ -588,22 +590,15 @@ function renderInventory() {
         const canAdd = available.length > 0;
 
         return `
-            <div class="item-card ${isBook ? 'book-card' : ''}">
+            <div class="item-card">
                 <div class="item-card-header">
-                    <div class="item-card-title">
-                        <span class="item-icon">${icon}</span>
-                        <span>${title}</span>
-                    </div>
-                    <button class="btn-remove-item" onclick="removeItem(${item.uid})">×</button>
+                    <div class="item-card-title">${iconHTML} <span>${title}</span></div>
+                    <button class="btn-remove" onclick="removeItem(${item.uid})">×</button>
                 </div>
                 ${catSelect}
                 ${usesRow}
-                <div class="ench-list">
-                    ${enchRows}
-                </div>
-                ${canAdd
-                    ? `<button class="btn-add-ench" onclick="addEnchantment(${item.uid})">+ Add Enchantment</button>`
-                    : ''}
+                ${enchRows}
+                ${canAdd ? `<button class="btn-add-ench" onclick="addEnchantment(${item.uid})">+ Add Enchantment</button>` : ''}
             </div>`;
     }).join('');
 }
@@ -751,9 +746,9 @@ function renderProtocol() {
     // Steps
     const stepsHtml = solution.steps.map((step, i) => {
         const costClass = step.cost >= 35 ? 'too-expensive' : step.cost >= 25 ? 'high-cost' : '';
-        const tIcon = step.targetIsBook ? '📗' : '⚔️';
-        const sIcon = step.sacrificeIsBook ? '📗' : '⚔️';
-        const rIcon = tIcon;
+        const tIcon = getItemIconHTML({ isBook: step.targetIsBook, category: step.targetCategory, enchantments: step.targetEnchs });
+        const sIcon = getItemIconHTML({ isBook: step.sacrificeIsBook, category: step.sacrificeCategory, enchantments: step.sacrificeEnchs });
+        const rIcon = getItemIconHTML({ isBook: step.targetIsBook, category: step.targetCategory, enchantments: step.resultEnchs });
 
         // Build descriptive names with current enchantments
         const tEnchStr = Object.entries(step.targetEnchs).map(([id, lv]) => fmtEnch(id, lv)).join(', ');
