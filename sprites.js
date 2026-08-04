@@ -30,7 +30,7 @@ const ITEM_PNG_URLS = {
 };
 
 /**
- * Returns exact 3D Isometric Minecraft Anvil PNG HTML (Anvil_(N)_JE3.png)
+ * Returns authentic 3D Isometric Minecraft Anvil PNG HTML
  */
 function getAnvilIconHTML(size = 24) {
     return `<img src="assets/anvil.png" width="${size}" height="${size}" class="mc-sprite mc-anvil-img" alt="Anvil" />`;
