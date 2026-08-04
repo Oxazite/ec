@@ -380,6 +380,7 @@ let nextId = 1;
 let currentMode = 'xp';
 let allSolutions = [];
 let currentSolutionIndex = 0;
+let currentIgnoredBooks = [];
 
 function scrollToBottom() {
     setTimeout(() => {
@@ -668,24 +669,56 @@ function calculate() {
         return;
     }
 
-    // Check that at least one enchantment exists
-    const hasEnch = inventory.some(i => Object.keys(i.enchantments).length > 0);
-    if (!hasEnch) {
+    // Identify target categories from non-book items in inventory
+    const targetCats = new Set(inventory.filter(i => !i.isBook).map(i => i.category));
+
+    // Filter items and detect completely useless books
+    const ignoredBooks = [];
+    const validInventory = [];
+
+    for (const item of inventory) {
+        if (!item.isBook) {
+            validInventory.push(item);
+        } else {
+            const enchKeys = Object.keys(item.enchantments);
+            if (enchKeys.length === 0) continue; // skip empty books
+
+            // Check if AT LEAST ONE enchantment on this book is compatible with ANY target item category
+            const isCompatible = targetCats.size === 0 || enchKeys.some(id => {
+                const info = ENCHANT_MAP.get(id);
+                return info && Array.from(targetCats).some(cat => info.cats.includes(cat));
+            });
+
+            if (isCompatible) {
+                validInventory.push(item);
+            } else {
+                ignoredBooks.push(item);
+            }
+        }
+    }
+    currentIgnoredBooks = ignoredBooks;
+
+    if (validInventory.length < 2) {
         emptyEl.classList.add('hidden');
         resultEl.classList.add('hidden');
         errorEl.classList.remove('hidden');
-        errorEl.innerHTML = `<div class="error-msg">Add at least one enchantment to your items/books.</div>`;
+        if (ignoredBooks.length > 0) {
+            const names = ignoredBooks.map(b => bookName(b)).join(', ');
+            errorEl.innerHTML = `<div class="error-msg">The added book (${names}) has no enchantments compatible with your target item. Add a compatible book to calculate.</div>`;
+        } else {
+            errorEl.innerHTML = `<div class="error-msg">Add at least 2 compatible items/books to calculate a combination.</div>`;
+        }
         return;
     }
 
     // Build items for optimizer — number duplicates (Sword #1, Sword #2)
     const catCounts = {};
     const catIndices = {};
-    for (const item of inventory) {
+    for (const item of validInventory) {
         const key = item.isBook ? 'book' : item.category;
         catCounts[key] = (catCounts[key] || 0) + 1;
     }
-    const optItems = inventory.map(item => {
+    const optItems = validInventory.map(item => {
         const key = item.isBook ? 'book' : item.category;
         catIndices[key] = (catIndices[key] || 0) + 1;
         const needsNum = catCounts[key] > 1;
@@ -757,8 +790,12 @@ function renderProtocol() {
 
     // Warnings
     let warnings = '';
+    if (currentIgnoredBooks && currentIgnoredBooks.length > 0) {
+        const bookNames = currentIgnoredBooks.map(b => bookName(b)).join(', ');
+        warnings += `<div class="warning-msg" style="margin-bottom:0.5rem;background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.3);color:var(--amber);">⚠️ Skipped ${currentIgnoredBooks.length} book${currentIgnoredBooks.length > 1 ? 's' : ''} with no compatible enchantments for target: <strong>${bookNames}</strong></div>`;
+    }
     if (solution.maxStepCost >= 30) {
-        warnings = `<div class="warning-msg">⚠️ Most expensive step costs ${solution.maxStepCost} levels — close to the 39-level limit!</div>`;
+        warnings += `<div class="warning-msg">⚠️ Most expensive step costs ${solution.maxStepCost} levels — close to the 39-level limit!</div>`;
     }
     warningsEl.innerHTML = warnings;
 
