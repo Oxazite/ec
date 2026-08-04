@@ -30,6 +30,42 @@ const ITEM_PNG_URLS = {
 };
 
 /**
+ * Returns authentic 3D Isometric Minecraft Anvil SVG
+ */
+function getAnvilIconSVG(size = 24) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="${size}" height="${size}" class="mc-sprite mc-anvil-sprite">
+        <!-- Top Face -->
+        <path fill="#64748b" d="M3 2h10v2H3z"/>
+        <path fill="#94a3b8" d="M3 2h10v1H3z"/>
+        <!-- Horn / Nose -->
+        <path fill="#475569" d="M1 3h2v2H1zM13 3h2v1h-2z"/>
+        <!-- Top Body -->
+        <path fill="#334155" d="M2 4h12v3H2z"/>
+        <path fill="#1e293b" d="M11 4h3v3h-3z"/>
+        <!-- Waist Column -->
+        <path fill="#334155" d="M5 7h6v4H5z"/>
+        <path fill="#1e293b" d="M8 7h3v4H8z"/>
+        <!-- Stepped Base -->
+        <path fill="#475569" d="M3 11h10v1H3z"/>
+        <path fill="#1e293b" d="M2 12h12v3H2z"/>
+        <path fill="#334155" d="M2 12h12v1H2z"/>
+    </svg>`;
+}
+
+/**
+ * Returns animated glowing Minecraft XP Orb SVG
+ */
+function getXPOrbIconSVG(size = 20) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="${size}" height="${size}" class="mc-sprite mc-xp-orb">
+        <circle cx="8" cy="8" r="6" fill="#84cc16" opacity="0.35" class="xp-glow"/>
+        <rect x="5" y="5" width="6" height="6" rx="1" fill="#a3e635"/>
+        <rect x="6" y="6" width="4" height="4" fill="#fef08a"/>
+        <rect x="7" y="7" width="2" height="2" fill="#ffffff"/>
+        <path fill="#65a30d" d="M5 5h1v6H5zM5 10h6v1H5z"/>
+    </svg>`;
+}
+
+/**
  * Returns authentic Mythitorium PNG image URL for an enchanted book
  */
 function getBookTextureURL(enchantments = {}) {
@@ -38,7 +74,6 @@ function getBookTextureURL(enchantments = {}) {
         return ITEM_PNG_URLS.book;
     }
 
-    // Use primary (first) enchantment and its level
     const [enchId, lvl] = entries[0];
     const levelNum = Math.max(1, parseInt(lvl) || 1);
     

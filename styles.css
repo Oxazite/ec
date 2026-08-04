@@ -110,6 +110,9 @@ header p {
 }
 
 .mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     padding: 0.4rem 1rem;
     font-size: 0.78rem;
     font-weight: 600;
@@ -120,6 +123,21 @@ header p {
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
+}
+
+@keyframes xp-pulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(132,204,22,0.6)); }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(163,230,53,0.9)); }
+}
+
+.mc-xp-orb {
+    animation: xp-pulse 1.4s ease-in-out infinite;
+    vertical-align: middle;
+}
+
+.mc-anvil-sprite {
+    vertical-align: middle;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
 }
 
 .mode-btn:hover {

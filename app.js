@@ -831,6 +831,16 @@ function randomProtocol() {
 // ══════════════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Render authentic Minecraft header & mode icons
+    const headerIcon = document.getElementById('header-anvil-icon');
+    if (headerIcon) headerIcon.innerHTML = getAnvilIconSVG(28);
+
+    const xpIcon = document.getElementById('xp-mode-icon');
+    if (xpIcon) xpIcon.innerHTML = getXPOrbIconSVG(18);
+
+    const pwpIcon = document.getElementById('pwp-mode-icon');
+    if (pwpIcon) pwpIcon.innerHTML = getAnvilIconSVG(18);
+
     document.getElementById('btn-add-item').addEventListener('click', () => addItem());
     document.getElementById('btn-add-book').addEventListener('click', () => addBook());
     document.getElementById('btn-calculate').addEventListener('click', () => calculate());
