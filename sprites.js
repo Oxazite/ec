@@ -30,17 +30,17 @@ const ITEM_PNG_URLS = {
 };
 
 /**
- * Returns authentic 3D Minecraft Anvil PNG HTML
+ * Returns exact 3D Isometric Minecraft Anvil PNG HTML (Anvil_(N)_JE3.png)
  */
 function getAnvilIconHTML(size = 24) {
     return `<img src="assets/anvil.png" width="${size}" height="${size}" class="mc-sprite mc-anvil-img" alt="Anvil" />`;
 }
 
 /**
- * Returns animated Minecraft XP Orb GIF HTML
+ * Returns animated Minecraft XP Orb HTML
  */
 function getXPOrbIconHTML(size = 20) {
-    return `<img src="assets/xp_orb.gif" width="${size}" height="${size}" class="mc-sprite mc-xp-orb-gif" alt="XP Orb" onerror="this.src='assets/xp_orb_small.gif'" />`;
+    return `<span class="mc-xp-orb-wrapper"><img src="assets/xp_orb.png" width="${size}" height="${size}" class="mc-sprite mc-xp-orb-img" alt="XP Orb" /></span>`;
 }
 
 /**

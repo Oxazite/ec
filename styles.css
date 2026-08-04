@@ -125,15 +125,30 @@ header p {
     white-space: nowrap;
 }
 
-.mc-xp-orb-gif {
+.mc-xp-orb-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     vertical-align: middle;
+    animation: xp-orb-spin-pulse 2s ease-in-out infinite;
+}
+
+.mc-xp-orb-img {
+    object-fit: contain;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: drop-shadow(0 0 4px rgba(132,204,22,0.8));
+    filter: drop-shadow(0 0 4px #84cc16);
+}
+
+@keyframes xp-orb-spin-pulse {
+    0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 2px #84cc16); }
+    50% { transform: scale(1.18) rotate(180deg); filter: drop-shadow(0 0 7px #a3e635); }
+    100% { transform: scale(1) rotate(360deg); filter: drop-shadow(0 0 2px #84cc16); }
 }
 
 .mc-anvil-img {
     vertical-align: middle;
+    object-fit: contain;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
