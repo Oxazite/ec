@@ -337,10 +337,14 @@ let lastSolution = null;
 // ══════════════════════════════════════════════════════════════
 
 function addItem(category = 'sword') {
+    // If a gear item already exists in inventory, match its category
+    const existingGear = inventory.find(i => !i.isBook);
+    const cat = existingGear ? existingGear.category : category;
+
     inventory.push({
         uid: nextId++,
         isBook: false,
-        category,
+        category: cat,
         anvilUses: 0,
         enchantments: {}
     });
@@ -348,12 +352,39 @@ function addItem(category = 'sword') {
 }
 
 function addBook() {
+    // Find all enchantment IDs currently in inventory
+    const usedEnchIds = new Set();
+    for (const item of inventory) {
+        for (const enchId of Object.keys(item.enchantments)) {
+            usedEnchIds.add(enchId);
+        }
+    }
+
+    // Find current gear item if any
+    const gearItem = inventory.find(i => !i.isBook);
+    let selectedEnch = null;
+
+    if (gearItem) {
+        // Find first enchantment for this gear's category that hasn't been added yet
+        selectedEnch = ENCHANTMENTS_DB.find(e => e.cats.includes(gearItem.category) && !usedEnchIds.has(e.id));
+    }
+
+    // Fallback if no gear item or all gear category enchantments used: pick any unused enchantment
+    if (!selectedEnch) {
+        selectedEnch = ENCHANTMENTS_DB.find(e => !usedEnchIds.has(e.id));
+    }
+
+    const initialEnchs = {};
+    if (selectedEnch) {
+        initialEnchs[selectedEnch.id] = selectedEnch.maxLevel;
+    }
+
     inventory.push({
         uid: nextId++,
         isBook: true,
         category: null,
         anvilUses: 0,
-        enchantments: {}
+        enchantments: initialEnchs
     });
     renderInventory();
 }
