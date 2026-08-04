@@ -1,9 +1,8 @@
 /**
  * MINECRAFT ITEM SPRITES & MYTHITORIUM EVEN BETTER ENCHANTS BOOK ICONS
- * SVG Pixel Art Sprites for Minecraft 1.21+ Anvil Optimizer
+ * SVG Pixel Art Sprites & Animated Glint for Minecraft 1.21+ Anvil Optimizer
  */
 
-// Helper to wrap SVG into HTML string
 function makeSVG(pathContent, viewBox = "0 0 16 16") {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="20" height="20" class="mc-sprite">${pathContent}</svg>`;
 }
@@ -31,68 +30,60 @@ const ITEM_SPRITES_SVG = {
     brush: `<path fill="#d97706" d="M6 1h4v4H6z"/><path fill="#854d0e" d="M7 5h2v6H7z"/><path fill="#f59e0b" d="M5 11h6v4H5z"/>`
 };
 
-// Mythitorium Even Better Enchants Emblem Badges
+// Mythitorium Even Better Enchants Badges
 const ENCHANTMENT_EMBLEMS = {
-    // Protection family (Blue / Red / Orange / Target Shields)
     protection: `<path fill="#3b82f6" d="M6 5h4v5l-2 2-2-2z"/><path fill="#93c5fd" d="M7 6h2v3H7z"/>`,
     fire_protection: `<path fill="#f97316" d="M6 5h4v5l-2 2-2-2z"/><path fill="#fbbf24" d="M7 6h2v2H7z"/>`,
     blast_protection: `<path fill="#eab308" d="M6 5h4v5l-2 2-2-2z"/><path fill="#ef4444" d="M7 7h2v2H7z"/>`,
     projectile_protection: `<path fill="#06b6d4" d="M6 5h4v5l-2 2-2-2z"/><circle cx="8" cy="8" r="1" fill="#fff"/>`,
-
-    // Melee Damage (Red / Blue Cross Swords)
     sharpness: `<path fill="#ef4444" d="M5 5l6 6M11 5L5 11" stroke="#ef4444" stroke-width="1.5"/><circle cx="8" cy="8" r="1" fill="#fca5a5"/>`,
     smite: `<path fill="#38bdf8" d="M7 4h2v5H7zM5 6h6v2H5z"/><path fill="#fff" d="M8 5v3"/>`,
     bane_of_arthropods: `<path fill="#a855f7" d="M6 6h4v4H6z"/><path fill="#c084fc" d="M5 5h2v2H5zM9 5h2v2H9zM5 9h2v2H5zM9 9h2v2H9z"/>`,
-
-    // Utility / Universal
     mending: `<circle cx="8" cy="8" r="3" fill="#f59e0b" stroke="#fef08a" stroke-width="1"/><path fill="#fff" d="M8 6l1 2h-2zM8 10l-1-2h2z"/>`,
     unbreaking: `<path fill="#94a3b8" d="M6 6h4v4H6z"/><path fill="#38bdf8" d="M7 7h2v2H7z"/>`,
     thorns: `<path fill="#22c55e" d="M6 6l4 4M10 6L6 10" stroke="#22c55e" stroke-width="1.5"/><circle cx="8" cy="8" r="1" fill="#4ade80"/>`,
-
-    // Mining / Tools
     efficiency: `<path fill="#06b6d4" d="M5 5h6v2H5zM7 7h2v4H7z"/><path fill="#67e8f9" d="M6 6h4v1H6z"/>`,
     silk_touch: `<path fill="#10b981" d="M5 6c0-1 3-2 3-2s3 1 3 2-3 4-3 4-3-3-3-4z"/><circle cx="8" cy="7" r="1" fill="#a7f3d0"/>`,
     fortune: `<path fill="#fbbf24" d="M8 4l3 4-3 4-3-4z"/><path fill="#fef08a" d="M8 6l1 2-1 2-1-2z"/>`,
-
-    // Boots
     feather_falling: `<path fill="#e0f2fe" d="M8 4c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z"/><path fill="#38bdf8" d="M8 6v3"/>`,
     depth_strider: `<path fill="#0284c7" d="M5 8c1-1 2-1 3 0s2 1 3 0v2c-1 1-2 1-3 0s-2-1-3 0z"/>`,
     frost_walker: `<path fill="#bae6fd" d="M6 6h4v4H6z"/><path fill="#38bdf8" d="M7 7h2v2H7z"/>`,
     soul_speed: `<path fill="#c084fc" d="M6 5h4v6H6z"/><path fill="#e9d5ff" d="M7 6h2v4H7z"/>`,
     swift_sneak: `<path fill="#64748b" d="M5 7h6v3H5z"/><circle cx="7" cy="8" r="1" fill="#38bdf8"/><circle cx="9" cy="8" r="1" fill="#38bdf8"/>`,
-
-    // Bow / Crossbow
     power: `<path fill="#f43f5e" d="M8 4l3 4h-2v4H7V8H5z"/>`,
     punch: `<path fill="#fb7185" d="M5 8h6v2H5zM9 6l3 3-3 3z"/>`,
     flame: `<path fill="#f97316" d="M8 4c1 2 3 3 3 5a3 3 0 01-6 0c0-2 2-3 3-5z"/><path fill="#fef08a" d="M8 7a1 1 0 011 1c0 1-1 2-1 2s-1-1-1-2a1 1 0 011-1z"/>`,
     infinity: `<path fill="#c084fc" d="M5 8a2 2 0 113-2 2 2 0 013 2 2 2 0 01-3 2 2 2 0 01-3-2z" fill-opacity="0.3" stroke="#c084fc" stroke-width="1.5"/>`,
-
-    // Mace 1.21
     density: `<path fill="#64748b" d="M6 4h4v8H6z"/><path fill="#94a3b8" d="M7 5h2v6H7z"/>`,
     breach: `<path fill="#ef4444" d="M8 4l4 4-4 4V9H4V7h4z"/>`,
     wind_burst: `<path fill="#38bdf8" d="M5 8c2-2 4-2 6 0M6 10c1-1 3-1 4 0"/>`,
-
-    // Curses
     binding_curse: `<path fill="#dc2626" d="M6 5h4v3H6zM5 8h6v4H5z"/><circle cx="8" cy="10" r="1" fill="#fca5a5"/>`,
     vanishing_curse: `<path fill="#7f1d1d" d="M6 6h4v4H6z"/><path fill="#fca5a5" d="M7 7h2v2H7z"/>`
 };
 
-/**
- * Returns HTML string for gear item sprite SVG
- */
 function getItemSpriteHTML(category) {
     const path = ITEM_SPRITES_SVG[category] || ITEM_SPRITES_SVG.sword;
     return makeSVG(path);
 }
 
-/**
- * Returns Mythitorium 'Even Better Enchants' styled Book SVG
- */
 function getBookSpriteHTML(enchantments = {}) {
     const enchIds = Object.keys(enchantments);
-    const primaryEnch = enchIds.length > 0 ? enchIds[0] : null;
 
-    // Mythitorium style Enchanted Book base (Purple leather cover + golden corner + magic aura)
+    // Unenchanted Book (Brown leather book with red strap)
+    if (enchIds.length === 0) {
+        const brownBook = `
+            <rect x="2" y="2" width="12" height="12" rx="1" fill="#854d0e"/>
+            <path fill="#a16207" d="M3 3h10v10H3z"/>
+            <path fill="#713f12" d="M2 2h2v12H2zM2 13h12v1H2z"/>
+            <path fill="#ef4444" d="M7 2h2v7l-1-1-1 1z"/>
+            <path fill="#fef08a" opacity="0.3" d="M4 4h7v2H4z"/>
+        `;
+        return makeSVG(brownBook);
+    }
+
+    const primaryEnch = enchIds[0];
+
+    // Mythitorium Even Better Enchants Base (Purple leather + gold corners + enchantment emblem)
     const baseBook = `
         <rect x="2" y="2" width="12" height="12" rx="1" fill="#7e22ce"/>
         <path fill="#a855f7" d="M3 3h10v10H3z"/>
@@ -101,19 +92,27 @@ function getBookSpriteHTML(enchantments = {}) {
         <path fill="#e9d5ff" opacity="0.3" d="M4 4h7v2H4z"/>
     `;
 
-    const emblem = primaryEnch && ENCHANTMENT_EMBLEMS[primaryEnch]
-        ? ENCHANTMENT_EMBLEMS[primaryEnch]
-        : `<circle cx="8" cy="8" r="2" fill="#f59e0b"/>`;
-
+    const emblem = ENCHANTMENT_EMBLEMS[primaryEnch] || `<circle cx="8" cy="8" r="2" fill="#f59e0b"/>`;
     return makeSVG(baseBook + emblem);
 }
 
 /**
- * Returns item or book icon HTML depending on item state
+ * Returns item or book icon wrapped in enchanted glint overlay if enchanted
  */
 function getItemIconHTML(item) {
+    const enchs = item.enchantments || item.targetEnchs || {};
+    const isEnchanted = Object.keys(enchs).length > 0 || (item.isBook && Object.keys(enchs).length > 0);
+
+    let svgHtml;
     if (item.isBook) {
-        return getBookSpriteHTML(item.enchantments || item.targetEnchs || {});
+        svgHtml = getBookSpriteHTML(enchs);
+    } else {
+        svgHtml = getItemSpriteHTML(item.category || 'sword');
     }
-    return getItemSpriteHTML(item.category || 'sword');
+
+    return `
+        <span class="mc-icon-wrapper ${isEnchanted ? 'is-enchanted' : ''}">
+            ${svgHtml}
+            ${isEnchanted ? '<span class="mc-glint-overlay"></span>' : ''}
+        </span>`;
 }
