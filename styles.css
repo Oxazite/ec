@@ -80,6 +80,15 @@ header .title-group .icon {
     border-radius: 8px;
 }
 
+.mc-anvil-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+
 header h1 {
     font-size: 1.15rem;
     font-weight: 700;
