@@ -838,6 +838,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pwpIcon = document.getElementById('pwp-mode-icon');
     if (pwpIcon) pwpIcon.innerHTML = getAnvilIconHTML(18);
 
+    // Start cycling through XP orb frames
+    startXPOrbAnimation();
+
     document.getElementById('btn-add-item').addEventListener('click', () => addItem());
     document.getElementById('btn-add-book').addEventListener('click', () => addBook());
     document.getElementById('btn-calculate').addEventListener('click', () => calculate());

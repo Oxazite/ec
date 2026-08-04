@@ -126,53 +126,32 @@ header p {
 }
 
 /*
- * XP Orb: CSS spritesheet animation
- * The official experience_orb.png is a 4×4 grid of 16×16 frames (64×64 total).
- * We step through all 16 frames to create the authentic color-cycling animation.
- * At display, background-size is set inline to 4×displaySize per axis.
- *
- * Sprite layout (row-major, left→right, top→bottom):
- *   Frame  0..3  = row 0 (y=0)
- *   Frame  4..7  = row 1 (y=-1*size)
- *   Frame  8..11 = row 2 (y=-2*size)
- *   Frame 12..15 = row 3 (y=-3*size)
- *
- * We animate background-position through all 16 positions.
+ * XP Orb: Stacked frame animation using rendered wiki images.
+ * All 11 value-tier orb images are stacked absolutely; JS cycles
+ * the .active class through them to animate.
  */
-.mc-xp-orb-sprite {
+.mc-xp-orb-anim {
     display: inline-block;
+    position: relative;
     vertical-align: middle;
-    background-image: url('assets/xp_orb.png');
-    background-repeat: no-repeat;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    animation: mc-xp-orb-frames 2s steps(1) infinite;
-    filter: drop-shadow(0 0 4px rgba(132,204,22,0.8));
 }
 
-/*
- * Step through all 16 frames of the 4×4 spritesheet.
- * With background-size: 400%, CSS percentage positioning formula:
- *   X% = col * 33.333%   (0, 33.333, 66.667, 100)
- *   Y% = row * 33.333%   (0, 33.333, 66.667, 100)
- */
-@keyframes mc-xp-orb-frames {
-    0%      { background-position:   0%      0%;      }
-    6.25%   { background-position:  33.333%  0%;      }
-    12.5%   { background-position:  66.667%  0%;      }
-    18.75%  { background-position: 100%      0%;      }
-    25%     { background-position:   0%     33.333%;  }
-    31.25%  { background-position:  33.333% 33.333%;  }
-    37.5%   { background-position:  66.667% 33.333%;  }
-    43.75%  { background-position: 100%     33.333%;  }
-    50%     { background-position:   0%     66.667%;  }
-    56.25%  { background-position:  33.333% 66.667%;  }
-    62.5%   { background-position:  66.667% 66.667%;  }
-    68.75%  { background-position: 100%     66.667%;  }
-    75%     { background-position:   0%    100%;      }
-    81.25%  { background-position:  33.333% 100%;     }
-    87.5%   { background-position:  66.667% 100%;     }
-    93.75%  { background-position: 100%    100%;      }
+.mc-xp-orb-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    opacity: 0;
+    transition: opacity 0.08s ease;
+    filter: drop-shadow(0 0 3px rgba(132,204,22,0.7));
+}
+
+.mc-xp-orb-frame.active {
+    opacity: 1;
 }
 
 .mc-anvil-img {

@@ -29,35 +29,62 @@ const ITEM_PNG_URLS = {
     book: MC_ASSETS_BASE + "book.png"
 };
 
-// The Minecraft Wiki blocks server-side downloads (403) but browsers can load
-// images directly. Use the exact URL the user provided.
+// 3D rendered Anvil from Minecraft Wiki (browser can load directly)
 const ANVIL_WIKI_URL = "https://minecraft.wiki/images/Anvil_%28N%29_JE3.png?d438e";
+
+// All 11 rendered Experience Orb value-tier images from Minecraft Wiki
+// These are the green glowing orbs seen in-game, not the raw texture atlas
+const XP_ORB_URLS = [
+    "https://minecraft.wiki/images/Experience_Orb_Value_-32768-2.png?563f1",
+    "https://minecraft.wiki/images/Experience_Orb_Value_3-6.png?6de8c",
+    "https://minecraft.wiki/images/Experience_Orb_Value_7-16.png?7ba42",
+    "https://minecraft.wiki/images/Experience_Orb_Value_17-36.png?ecbc0",
+    "https://minecraft.wiki/images/Experience_Orb_Value_37-72.png?cb2d5",
+    "https://minecraft.wiki/images/Experience_Orb_Value_73-148.png?1eec1",
+    "https://minecraft.wiki/images/Experience_Orb_Value_149-306.png?0e61c",
+    "https://minecraft.wiki/images/Experience_Orb_Value_307-616.png?175d5",
+    "https://minecraft.wiki/images/Experience_Orb_Value_617-1236.png?b2ceb",
+    "https://minecraft.wiki/images/Experience_Orb_Value_1237-2476.png?6c709",
+    "https://minecraft.wiki/images/Experience_Orb_Value_2477-32767.png?cce67"
+];
 
 /**
  * Returns authentic 3D Isometric Minecraft Anvil icon HTML.
  * Loads directly from the Minecraft Wiki (browsers are not blocked).
- * Falls back to a locally bundled flat texture on error.
  */
 function getAnvilIconHTML(size = 24) {
-    return `<img src="${ANVIL_WIKI_URL}" width="${size}" height="${size}" class="mc-sprite mc-anvil-img" alt="Anvil" crossorigin="anonymous" onerror="this.onerror=null;this.src='assets/anvil_top.png';" />`;
+    return `<img src="${ANVIL_WIKI_URL}" width="${size}" height="${size}" class="mc-sprite mc-anvil-img" alt="Anvil" crossorigin="anonymous" referrerpolicy="no-referrer" />`;
 }
 
 /**
  * Returns animated Minecraft XP Orb HTML.
  *
- * The official experience_orb.png texture is a 64x64 spritesheet with a 4x4
- * grid of 16x16 frames. Each frame represents a different XP value color tier.
- * We animate by stepping through background-position using CSS.
- *
- * The animation cycles through all 16 frames (left-to-right, top-to-bottom)
- * creating the authentic color-shifting effect seen in-game.
+ * Creates a container with all 11 rendered XP orb images stacked on top
+ * of each other. JavaScript cycles through them to create the authentic
+ * size-shifting animation seen in-game.
  */
 function getXPOrbIconHTML(size = 20) {
-    // We use a <span> with background-image spritesheet animation
-    // The sprite is 4 cols x 4 rows of 16x16 frames = 64x64 total
-    // At display size, we scale it: background-size = 4*size x 4*size
-    const bgSize = size * 4;
-    return `<span class="mc-xp-orb-sprite" style="width:${size}px;height:${size}px;background-size:${bgSize}px ${bgSize}px;" title="Min XP"></span>`;
+    const imgs = XP_ORB_URLS.map((url, i) =>
+        `<img src="${url}" width="${size}" height="${size}" class="mc-xp-orb-frame${i === 0 ? ' active' : ''}" alt="" crossorigin="anonymous" referrerpolicy="no-referrer" />`
+    ).join('');
+
+    return `<span class="mc-xp-orb-anim" style="width:${size}px;height:${size}px;">${imgs}</span>`;
+}
+
+// Animate XP orbs by cycling frames
+let _xpOrbInterval = null;
+function startXPOrbAnimation() {
+    if (_xpOrbInterval) return;
+    let frame = 0;
+    _xpOrbInterval = setInterval(() => {
+        document.querySelectorAll('.mc-xp-orb-anim').forEach(container => {
+            const frames = container.querySelectorAll('.mc-xp-orb-frame');
+            if (frames.length === 0) return;
+            frames.forEach(f => f.classList.remove('active'));
+            frame = (frame + 1) % frames.length;
+            frames[frame].classList.add('active');
+        });
+    }, 150); // ~6.67 fps, matching Minecraft's orb animation speed
 }
 
 /**
