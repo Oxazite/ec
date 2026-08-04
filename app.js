@@ -656,23 +656,32 @@ function renderProtocol(solution) {
         const costClass = step.cost >= 35 ? 'too-expensive' : step.cost >= 25 ? 'high-cost' : '';
         const tIcon = step.targetIsBook ? '📗' : '⚔️';
         const sIcon = step.sacrificeIsBook ? '📗' : '⚔️';
+        const rIcon = tIcon;
 
         // Build descriptive names with current enchantments
         const tEnchStr = Object.entries(step.targetEnchs).map(([id, lv]) => fmtEnch(id, lv)).join(', ');
         const sEnchStr = Object.entries(step.sacrificeEnchs).map(([id, lv]) => fmtEnch(id, lv)).join(', ');
+        const rEnchStr = Object.entries(step.resultEnchs).map(([id, lv]) => fmtEnch(id, lv)).join(', ');
 
         const tLabel = step.targetIsBook ? 'Book' : step.targetName.replace(/ #\d+$/, '');
         const sLabel = step.sacrificeIsBook ? 'Book' : step.sacrificeName.replace(/ #\d+$/, '');
+        const rLabel = step.targetIsBook ? 'Book' : step.targetName.replace(/ #\d+$/, '');
 
         const tDisplay = tEnchStr ? `${tLabel} (${tEnchStr})` : tLabel;
         const sDisplay = sEnchStr ? `${sLabel} (${sEnchStr})` : sLabel;
+        const rDisplay = rEnchStr ? `${rLabel} (${rEnchStr})` : rLabel;
 
         return `
             <div class="step-card ${step.cost >= 35 ? 'warning' : ''}">
                 <div class="step-num">${i + 1}</div>
                 <div class="step-detail">
-                    <div class="step-title">${tIcon} ${tDisplay}</div>
-                    <div class="step-title" style="color:var(--text-3);font-weight:500;margin-top:1px">+ ${sIcon} ${sDisplay}</div>
+                    <div class="step-title">
+                        <span>${tIcon} ${tDisplay}</span>
+                        <span class="step-op">+</span>
+                        <span>${sIcon} ${sDisplay}</span>
+                        <span class="step-op">=</span>
+                        <span class="step-result">${rIcon} ${rDisplay}</span>
+                    </div>
                     <div class="step-meta">
                         <span>PWP: ${step.tPWP}+${step.sPWP}</span>
                         <span>Ench: ${step.enchCost}${step.incompatCost ? ` +${step.incompatCost} incompat` : ''}</span>
