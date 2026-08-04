@@ -225,6 +225,13 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
     let bestSolutions = [];
     const memo = new Map();
 
+    // Safety limits to prevent browser freeze
+    const TIME_LIMIT_MS = 2000;
+    const ITERATION_CAP = 500000;
+    const startTime = performance.now();
+    let iterations = 0;
+    let hitLimit = false;
+
     function evaluateCandidate(cand) {
         if (mode === 'pwp') {
             if (cand.finalUses < bestFinalUses) {
@@ -263,6 +270,15 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
     }
 
     function search(current, accCost, maxStep, steps) {
+        // Check safety limits every 1000 iterations
+        if (++iterations % 1000 === 0) {
+            if (iterations >= ITERATION_CAP || (performance.now() - startTime) >= TIME_LIMIT_MS) {
+                hitLimit = true;
+                return;
+            }
+        }
+        if (hitLimit) return;
+
         if (mode === 'xp' && accCost > bestTotalCost) return;
 
         const key = getStateKey(current);
@@ -286,6 +302,7 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
         const n = current.length;
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
+                if (hitLimit) return;
                 if (i === j) continue;
                 const target = current[i];
                 const sacrifice = current[j];
@@ -343,6 +360,13 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
     }
 
     search(items, 0, 0, []);
+
+    // Attach metadata about search limits
+    if (bestSolutions.length > 0) {
+        bestSolutions._hitLimit = hitLimit;
+        bestSolutions._iterations = iterations;
+    }
+
     return bestSolutions;
 }
 
@@ -612,7 +636,7 @@ function autoCalculate() {
         if (inventory.length >= 2) {
             calculate();
         }
-    }, 100);
+    }, 300);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -690,7 +714,11 @@ function calculate() {
         const solutions = findOptimal(optItems, currentMode, allowConflicts);
         const dt = performance.now() - t0;
 
-        statusEl.textContent = `${dt.toFixed(0)}ms`;
+        if (solutions._hitLimit) {
+            statusEl.textContent = `${dt.toFixed(0)}ms (partial — search limit reached)`;
+        } else {
+            statusEl.textContent = `${dt.toFixed(0)}ms`;
+        }
 
         if (!solutions || solutions.length === 0) {
             allSolutions = [];
