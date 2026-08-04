@@ -1,9 +1,10 @@
 /**
  * MINECRAFT 1.21 AUTHENTIC ITEM PNG TEXTURES & MYTHITORIUM EVEN BETTER ENCHANTS
- * Official Minecraft game textures + EvenBetterEnchants book icons + Animated Glint
+ * Official Minecraft game textures + EvenBetterEnchants book icons + Authentic Glint Mask
  */
 
 const MC_ASSETS_BASE = "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/item/";
+const OFFICIAL_GLINT_URL = "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png";
 
 // Real in-game Minecraft item PNG texture URLs
 const ITEM_PNG_URLS = {
@@ -31,7 +32,7 @@ const ITEM_PNG_URLS = {
 
 // SVG helper for Even Better Enchants Mythitorium Styled Books
 function makeSVG(pathContent, viewBox = "0 0 16 16") {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="22" height="22" class="mc-sprite">${pathContent}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="20" height="20" class="mc-sprite">${pathContent}</svg>`;
 }
 
 // Mythitorium EvenBetterEnchants Emblem Badges
@@ -65,11 +66,6 @@ const ENCHANTMENT_EMBLEMS = {
     vanishing_curse: `<path fill="#7f1d1d" d="M6 5h4v4H6z"/><path fill="#fca5a5" d="M7 6h2v2H7z"/>`
 };
 
-function getItemSpriteHTML(category) {
-    const url = ITEM_PNG_URLS[category] || ITEM_PNG_URLS.sword;
-    return `<img src="${url}" class="mc-sprite mc-item-png" alt="${category}" />`;
-}
-
 function getBookSpriteHTML(enchantments = {}) {
     const enchIds = Object.keys(enchantments);
 
@@ -94,22 +90,27 @@ function getBookSpriteHTML(enchantments = {}) {
 }
 
 /**
- * Returns item or book icon wrapped in animated glint overlay if enchanted
+ * Returns item or book icon wrapped in animated glint overlay (strictly masked to item shape)
  */
 function getItemIconHTML(item) {
     const enchs = item.enchantments || item.targetEnchs || {};
     const isEnchanted = Object.keys(enchs).length > 0;
 
-    let innerHtml;
     if (item.isBook) {
-        innerHtml = getBookSpriteHTML(enchs);
-    } else {
-        innerHtml = getItemSpriteHTML(item.category || 'sword');
+        const svgHtml = getBookSpriteHTML(enchs);
+        return `
+            <span class="mc-icon-wrapper ${isEnchanted ? 'is-enchanted' : ''}">
+                ${svgHtml}
+                ${isEnchanted ? '<span class="mc-glint-overlay"></span>' : ''}
+            </span>`;
     }
 
+    const imgUrl = ITEM_PNG_URLS[item.category] || ITEM_PNG_URLS.sword;
+    const imgHtml = `<img src="${imgUrl}" class="mc-sprite mc-item-png" alt="${item.category || 'item'}" />`;
+
     return `
-        <span class="mc-icon-wrapper ${isEnchanted ? 'is-enchanted' : ''}">
-            ${innerHtml}
+        <span class="mc-icon-wrapper ${isEnchanted ? 'is-enchanted' : ''}" style="--item-mask: url('${imgUrl}')">
+            ${imgHtml}
             ${isEnchanted ? '<span class="mc-glint-overlay"></span>' : ''}
         </span>`;
 }
