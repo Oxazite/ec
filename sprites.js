@@ -15,7 +15,7 @@ const ITEM_PNG_URLS = {
     bow: MC_ASSETS_BASE + "bow.png",
     crossbow: MC_ASSETS_BASE + "crossbow_standby.png",
     trident: MC_ASSETS_BASE + "trident.png",
-    spear: MC_ASSETS_BASE + "trident.png",
+    spear: "assets/spear.png",
     mace: MC_ASSETS_BASE + "mace.png",
     helmet: MC_ASSETS_BASE + "diamond_helmet.png",
     chestplate: MC_ASSETS_BASE + "diamond_chestplate.png",

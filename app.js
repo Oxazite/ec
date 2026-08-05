@@ -88,7 +88,7 @@ const ITEM_CATEGORIES = [
     { id: 'bow', name: 'Bow', icon: '🏹' },
     { id: 'crossbow', name: 'Crossbow', icon: '🎯' },
     { id: 'trident', name: 'Trident', icon: '🔱' },
-    { id: 'spear', name: 'Spear', icon: '🔱' },
+    { id: 'spear', name: 'Spear', icon: '🗡️' },
     { id: 'mace', name: 'Mace', icon: '🔩' },
     { id: 'helmet', name: 'Helmet', icon: '⛑️' },
     { id: 'chestplate', name: 'Chestplate', icon: '🛡️' },
