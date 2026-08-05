@@ -648,18 +648,11 @@ function renderInventory() {
             </div>`;
     }).join('');
 
-    // Auto-calculate whenever inventory changes (only if mode selected)
-    autoCalculate();
-}
-
-let _autoCalcTimer = null;
-function autoCalculate() {
-    clearTimeout(_autoCalcTimer);
-    _autoCalcTimer = setTimeout(() => {
-        if (currentMode !== null && inventory.length >= 2) {
-            calculate();
-        }
-    }, 300);
+    // Update inventory item count display
+    const countEl = document.getElementById('item-count');
+    if (countEl) {
+        countEl.textContent = `${inventory.length} item${inventory.length !== 1 ? 's' : ''}`;
+    }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -996,9 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Conflict toggle
     document.getElementById('toggle-conflicts').addEventListener('change', () => {
-        if (inventory.length >= 2) {
-            calculate();
-        }
+        // Calculation requires clicking Min XP or Min PWP
     });
 
     // Start with one sword and one book for convenience
