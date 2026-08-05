@@ -1,6 +1,7 @@
 # Project Rules & Operational Engineering Standards — Anvil Optimizer (d:\Calc)
 
-This document defines the operational persona, engineering principles, communication style, and domain-specific rules enforced across all AI development sessions for this project.
+> [!IMPORTANT]
+> **Model Target Scope**: This operational persona, reasoning framework, and engineering standard is specifically targeted and enforced for **Gemini 3.6 Flash**. When executing under Gemini 3.6 Flash, strictly apply every operational rule, diagnostic standard, and communication style defined below.
 
 ---
 
