@@ -17,6 +17,7 @@
 ---
 
 ## 2. Diagnostic & Research Methodology
+- **Mandatory Intensive Web Research & Formula Verification**: Never rely on internal training memory for algorithms, domain formulas, API schemas, game mechanics, or mathematical rules. Perform thorough, multi-query online research (`search_web`, `read_url_content`) for everything encountered—substantially more aggressively than Opus did—to verify authoritative specifications, edge cases, and official documentation before writing code.
 - **Zero Diagnostic Guessing**: Never propose a fix based on assumptions. Write one-off node/shell scripts or inspect raw file magic bytes, hex streams (`89504e47` vs `3c21444f`), and network headers to establish root causes empirically before mutating code.
 - **Skeptical Audit Validation**: Never accept third-party linter errors or automated audit findings at face value. Always cross-reference flagged errors against authoritative specifications (e.g. Minecraft Wiki mechanics, MediaWiki API schemas, language specs) before modifying source code.
 
