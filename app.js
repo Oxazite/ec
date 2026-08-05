@@ -37,13 +37,16 @@ const ENCHANTMENTS_DB = [
     { id: 'soul_speed', name: 'Soul Speed', maxLevel: 3, bookMul: 4, itemMul: 8, group: null, cats: ['boots'] },
     { id: 'swift_sneak', name: 'Swift Sneak', maxLevel: 3, bookMul: 4, itemMul: 8, group: null, cats: ['leggings'] },
     // Sword
-    { id: 'sharpness', name: 'Sharpness', maxLevel: 5, bookMul: 1, itemMul: 2, group: 'melee_damage', cats: ['sword','axe'] },
-    { id: 'smite', name: 'Smite', maxLevel: 5, bookMul: 1, itemMul: 2, group: 'melee_damage', cats: ['sword','axe'] },
-    { id: 'bane_of_arthropods', name: 'Bane of Arthropods', maxLevel: 5, bookMul: 1, itemMul: 2, group: 'melee_damage', cats: ['sword','axe'] },
-    { id: 'knockback', name: 'Knockback', maxLevel: 2, bookMul: 1, itemMul: 2, group: null, cats: ['sword'] },
-    { id: 'fire_aspect', name: 'Fire Aspect', maxLevel: 2, bookMul: 2, itemMul: 4, group: null, cats: ['sword','mace'] },
-    { id: 'looting', name: 'Looting', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['sword'] },
+    // Sword & Spear
+    { id: 'sharpness', name: 'Sharpness', maxLevel: 5, bookMul: 1, itemMul: 2, group: 'melee_damage', cats: ['sword','axe','spear'] },
+    { id: 'smite', name: 'Smite', maxLevel: 5, bookMul: 1, itemMul: 2, group: 'melee_damage', cats: ['sword','axe','spear'] },
+    { id: 'bane_of_arthropods', name: 'Bane of Arthropods', maxLevel: 5, bookMul: 1, itemMul: 2, group: 'melee_damage', cats: ['sword','axe','spear'] },
+    { id: 'knockback', name: 'Knockback', maxLevel: 2, bookMul: 1, itemMul: 2, group: null, cats: ['sword','spear'] },
+    { id: 'fire_aspect', name: 'Fire Aspect', maxLevel: 2, bookMul: 2, itemMul: 4, group: null, cats: ['sword','mace','spear'] },
+    { id: 'looting', name: 'Looting', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['sword','spear'] },
     { id: 'sweeping_edge', name: 'Sweeping Edge', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['sword'] },
+    // Spear Exclusive
+    { id: 'lunge', name: 'Lunge', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['spear'] },
     // Mace
     { id: 'density', name: 'Density', maxLevel: 5, bookMul: 1, itemMul: 2, group: 'mace_offensive', cats: ['mace'] },
     { id: 'breach', name: 'Breach', maxLevel: 4, bookMul: 2, itemMul: 4, group: 'mace_offensive', cats: ['mace'] },
@@ -60,12 +63,11 @@ const ENCHANTMENTS_DB = [
     { id: 'quick_charge', name: 'Quick Charge', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['crossbow'] },
     { id: 'multishot', name: 'Multishot', maxLevel: 1, bookMul: 2, itemMul: 4, group: 'crossbow_shot', cats: ['crossbow'] },
     { id: 'piercing', name: 'Piercing', maxLevel: 4, bookMul: 1, itemMul: 2, group: 'crossbow_shot', cats: ['crossbow'] },
-    // Trident & Spear
-    { id: 'loyalty', name: 'Loyalty', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['trident','spear'] },
-    { id: 'impaling', name: 'Impaling', maxLevel: 5, bookMul: 2, itemMul: 4, group: null, cats: ['trident','spear'] },
-    { id: 'riptide', name: 'Riptide', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['trident','spear'] },
-    { id: 'channeling', name: 'Channeling', maxLevel: 1, bookMul: 4, itemMul: 8, group: null, cats: ['trident','spear'] },
-    { id: 'lunge', name: 'Lunge', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['spear','trident'] },
+    // Trident
+    { id: 'loyalty', name: 'Loyalty', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['trident'] },
+    { id: 'impaling', name: 'Impaling', maxLevel: 5, bookMul: 2, itemMul: 4, group: null, cats: ['trident'] },
+    { id: 'riptide', name: 'Riptide', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['trident'] },
+    { id: 'channeling', name: 'Channeling', maxLevel: 1, bookMul: 4, itemMul: 8, group: null, cats: ['trident'] },
     // Fishing Rod
     { id: 'luck_of_the_sea', name: 'Luck of the Sea', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['fishing_rod'] },
     { id: 'lure', name: 'Lure', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['fishing_rod'] },
