@@ -221,7 +221,7 @@ function getStateKey(items) {
  * Find optimal combination order.
  * mode: 'xp' (minimize total XP cost) | 'pwp' (minimize final anvil uses, tiebreak by XP)
  */
-function findOptimal(items, mode, ignoreIncompatibility = false) {
+function findOptimal(items, mode, ignoreIncompatibility = false, extraTimeMs = 0) {
     if (items.length < 2) return [];
 
     let bestTotalCost = Infinity;
@@ -229,9 +229,9 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
     let bestSolutions = [];
     const memo = new Map();
 
-    // Safety limits to prevent browser freeze
-    const TIME_LIMIT_MS = 2000;
-    const ITERATION_CAP = 500000;
+    // Safety limits to prevent browser freeze (10s base limit)
+    const TIME_LIMIT_MS = 10000 + extraTimeMs;
+    const ITERATION_CAP = 2500000 + (extraTimeMs ? 5000000 : 0);
     const startTime = performance.now();
     let iterations = 0;
     let hitLimit = false;
@@ -381,10 +381,11 @@ function findOptimal(items, mode, ignoreIncompatibility = false) {
 
 let inventory = [];
 let nextId = 1;
-let currentMode = 'xp';
+let currentMode = null;
 let allSolutions = [];
 let currentSolutionIndex = 0;
 let currentIgnoredBooks = [];
+let currentExtraTimeMs = 0;
 
 function scrollToBottom() {
     setTimeout(() => {
@@ -630,7 +631,7 @@ function renderInventory() {
             </div>`;
     }).join('');
 
-    // Auto-calculate whenever inventory changes
+    // Auto-calculate whenever inventory changes (only if mode selected)
     autoCalculate();
 }
 
@@ -638,7 +639,7 @@ let _autoCalcTimer = null;
 function autoCalculate() {
     clearTimeout(_autoCalcTimer);
     _autoCalcTimer = setTimeout(() => {
-        if (inventory.length >= 2) {
+        if (currentMode !== null && inventory.length >= 2) {
             calculate();
         }
     }, 300);
@@ -648,11 +649,24 @@ function autoCalculate() {
 // UI: RUN OPTIMIZER & RENDER PROTOCOL
 // ══════════════════════════════════════════════════════════════
 
-function calculate() {
+function calculate(isContinuation = false) {
     const emptyEl = document.getElementById('protocol-empty');
     const resultEl = document.getElementById('protocol-results');
     const errorEl = document.getElementById('protocol-error');
     const statusEl = document.getElementById('protocol-status');
+
+    // ONLY calculate when user opts for Min XP or Min PWP
+    if (currentMode === null) {
+        emptyEl.classList.remove('hidden');
+        resultEl.classList.add('hidden');
+        errorEl.classList.add('hidden');
+        statusEl.textContent = '';
+        return;
+    }
+
+    if (!isContinuation) {
+        currentExtraTimeMs = 0;
+    }
 
     // Validate
     if (inventory.length < 2) {
@@ -748,11 +762,11 @@ function calculate() {
     setTimeout(() => {
         const t0 = performance.now();
         const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
-        const solutions = findOptimal(optItems, currentMode, allowConflicts);
+        const solutions = findOptimal(optItems, currentMode, allowConflicts, currentExtraTimeMs);
         const dt = performance.now() - t0;
 
         if (solutions._hitLimit) {
-            statusEl.textContent = `${dt.toFixed(0)}ms (partial — search limit reached)`;
+            statusEl.textContent = `${dt.toFixed(0)}ms (partial — 10s search limit reached)`;
         } else {
             statusEl.textContent = `${dt.toFixed(0)}ms`;
         }
@@ -776,6 +790,11 @@ function calculate() {
     }, 10);
 }
 
+function continueSearch() {
+    currentExtraTimeMs += 10000;
+    calculate(true);
+}
+
 function bookName(item) {
     const enchIds = Object.keys(item.enchantments);
     if (enchIds.length === 0) return 'Empty Book';
@@ -797,6 +816,9 @@ function renderProtocol() {
     if (currentIgnoredBooks && currentIgnoredBooks.length > 0) {
         const bookNames = currentIgnoredBooks.map(b => bookName(b)).join(', ');
         warnings += `<div class="warning-msg" style="margin-bottom:0.5rem;background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.3);color:var(--amber);">⚠️ Skipped ${currentIgnoredBooks.length} book${currentIgnoredBooks.length > 1 ? 's' : ''} with no compatible enchantments for target: <strong>${bookNames}</strong></div>`;
+    }
+    if (allSolutions && allSolutions._hitLimit) {
+        warnings += `<div class="warning-msg" style="margin-bottom:0.5rem;background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);">⚠️ Search limit reached (10s timeout). Partial optimal path shown. <button id="btn-continue-search" onclick="continueSearch()" class="btn-continue-link">Continue Search?</button></div>`;
     }
     if (solution.maxStepCost >= 30) {
         warnings += `<div class="warning-msg">⚠️ Most expensive step costs ${solution.maxStepCost} levels — close to the 39-level limit!</div>`;
