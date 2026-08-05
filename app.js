@@ -60,20 +60,21 @@ const ENCHANTMENTS_DB = [
     { id: 'quick_charge', name: 'Quick Charge', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['crossbow'] },
     { id: 'multishot', name: 'Multishot', maxLevel: 1, bookMul: 2, itemMul: 4, group: 'crossbow_shot', cats: ['crossbow'] },
     { id: 'piercing', name: 'Piercing', maxLevel: 4, bookMul: 1, itemMul: 2, group: 'crossbow_shot', cats: ['crossbow'] },
-    // Trident
-    { id: 'loyalty', name: 'Loyalty', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['trident'] },
-    { id: 'impaling', name: 'Impaling', maxLevel: 5, bookMul: 2, itemMul: 4, group: null, cats: ['trident'] },
-    { id: 'riptide', name: 'Riptide', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['trident'] },
-    { id: 'channeling', name: 'Channeling', maxLevel: 1, bookMul: 4, itemMul: 8, group: null, cats: ['trident'] },
+    // Trident & Spear
+    { id: 'loyalty', name: 'Loyalty', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['trident','spear'] },
+    { id: 'impaling', name: 'Impaling', maxLevel: 5, bookMul: 2, itemMul: 4, group: null, cats: ['trident','spear'] },
+    { id: 'riptide', name: 'Riptide', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['trident','spear'] },
+    { id: 'channeling', name: 'Channeling', maxLevel: 1, bookMul: 4, itemMul: 8, group: null, cats: ['trident','spear'] },
+    { id: 'lunge', name: 'Lunge', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['spear','trident'] },
     // Fishing Rod
     { id: 'luck_of_the_sea', name: 'Luck of the Sea', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['fishing_rod'] },
     { id: 'lure', name: 'Lure', maxLevel: 3, bookMul: 2, itemMul: 4, group: null, cats: ['fishing_rod'] },
     // Universal
-    { id: 'unbreaking', name: 'Unbreaking', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['helmet','chestplate','leggings','boots','sword','mace','pickaxe','shovel','axe','hoe','bow','crossbow','trident','shield','elytra','fishing_rod','flint_and_steel','shears','brush'] },
-    { id: 'mending', name: 'Mending', maxLevel: 1, bookMul: 2, itemMul: 4, group: null, cats: ['helmet','chestplate','leggings','boots','sword','mace','pickaxe','shovel','axe','hoe','bow','crossbow','trident','shield','elytra','fishing_rod','flint_and_steel','shears','brush'] },
+    { id: 'unbreaking', name: 'Unbreaking', maxLevel: 3, bookMul: 1, itemMul: 2, group: null, cats: ['helmet','chestplate','leggings','boots','sword','mace','pickaxe','shovel','axe','hoe','bow','crossbow','trident','spear','shield','elytra','fishing_rod','flint_and_steel','shears','brush'] },
+    { id: 'mending', name: 'Mending', maxLevel: 1, bookMul: 2, itemMul: 4, group: null, cats: ['helmet','chestplate','leggings','boots','sword','mace','pickaxe','shovel','axe','hoe','bow','crossbow','trident','spear','shield','elytra','fishing_rod','flint_and_steel','shears','brush'] },
     // Curses
     { id: 'binding_curse', name: 'Curse of Binding', maxLevel: 1, bookMul: 4, itemMul: 8, group: null, cats: ['helmet','chestplate','leggings','boots','elytra'] },
-    { id: 'vanishing_curse', name: 'Curse of Vanishing', maxLevel: 1, bookMul: 4, itemMul: 8, group: null, cats: ['helmet','chestplate','leggings','boots','sword','mace','pickaxe','shovel','axe','hoe','bow','crossbow','trident','shield','elytra','fishing_rod','flint_and_steel','shears','brush'] }
+    { id: 'vanishing_curse', name: 'Curse of Vanishing', maxLevel: 1, bookMul: 4, itemMul: 8, group: null, cats: ['helmet','chestplate','leggings','boots','sword','mace','pickaxe','shovel','axe','hoe','bow','crossbow','trident','spear','shield','elytra','fishing_rod','flint_and_steel','shears','brush'] }
 ];
 
 const ENCHANT_MAP = new Map(ENCHANTMENTS_DB.map(e => [e.id, e]));
@@ -87,6 +88,7 @@ const ITEM_CATEGORIES = [
     { id: 'bow', name: 'Bow', icon: '🏹' },
     { id: 'crossbow', name: 'Crossbow', icon: '🎯' },
     { id: 'trident', name: 'Trident', icon: '🔱' },
+    { id: 'spear', name: 'Spear', icon: '🔱' },
     { id: 'mace', name: 'Mace', icon: '🔩' },
     { id: 'helmet', name: 'Helmet', icon: '⛑️' },
     { id: 'chestplate', name: 'Chestplate', icon: '🛡️' },

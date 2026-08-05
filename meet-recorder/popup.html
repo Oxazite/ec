@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=340" />
+  <title>Meet Recorder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ── Dynamic Header ────────────────────────────────────────── -->
+    <header class="header">
+      <!-- Main view header -->
+      <div id="header-main" class="header-row">
+        <div class="header-left">
+          <svg class="logo-icon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <rect x="2" y="4" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M16 9l4.2-2.8A1 1 0 0 1 22 7v10a1 1 0 0 1-1.8.6L16 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <h1 class="header-title">Meet Recorder</h1>
+        </div>
+        <div class="header-right">
+          <button id="btn-library" class="btn-icon" aria-label="Recordings Library (24h)" title="Recordings Library (24h auto-save)">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span id="library-badge" class="badge hidden">0</span>
+          </button>
+          <button id="btn-settings" class="btn-icon" aria-label="Settings" title="Settings">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subview header (Library / Settings) -->
+      <div id="header-subview" class="header-row hidden">
+        <button id="btn-nav-back" class="btn-icon" aria-label="Back">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <h2 id="subview-title" class="header-title">Title</h2>
+      </div>
+    </header>
+
+    <!-- ── Main View ──────────────────────────────────────────── -->
+    <main id="view-main" class="view active">
+      <!-- Status badge -->
+      <div class="status-area">
+        <div id="status-dot" class="status-dot"></div>
+        <span id="status-text" class="status-text">Ready</span>
+      </div>
+
+      <!-- Timer -->
+      <div class="timer-container">
+        <span id="timer" class="timer">00:00:00</span>
+      </div>
+
+      <!-- Error message -->
+      <div id="error-bar" class="error-bar hidden">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span id="error-text"></span>
+      </div>
+
+      <!-- Record Controls (Idle / Recording) -->
+      <div id="record-controls" class="controls-area">
+        <button id="btn-record" class="btn-primary btn-start">
+          <span class="btn-icon-inner" id="btn-record-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <circle cx="12" cy="12" r="7"/>
+            </svg>
+          </span>
+          <span id="btn-record-label">Start Recording</span>
+        </button>
+      </div>
+
+      <!-- Post-Recording Actions (Recording Complete) -->
+      <div id="post-actions" class="post-actions hidden">
+        <div class="file-info">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span id="file-size" class="file-size">0 MB</span>
+        </div>
+
+        <button id="btn-download" class="btn-primary btn-start">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download Recording
+        </button>
+
+        <div class="secondary-actions">
+          <button id="btn-new-record" class="btn-secondary">
+            Start New Recording
+          </button>
+          <button id="btn-discard" class="btn-ghost" title="Discard recording">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── Library View ────────────────────────────────────────── -->
+    <div id="view-library" class="view subview">
+      <div class="library-body">
+        <div id="library-list" class="library-list">
+          <!-- Dynamic recording cards -->
+        </div>
+
+        <div id="library-empty" class="library-empty hidden">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          <p class="empty-title">No Saved Recordings</p>
+          <p class="empty-desc">Recordings automatically stay saved on disk for 24 hours.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Settings View ──────────────────────────────────────── -->
+    <div id="view-settings" class="view subview">
+      <div class="settings-body">
+        <!-- Resolution -->
+        <div class="setting-group">
+          <label class="setting-label">Resolution</label>
+          <div class="setting-options" id="opt-resolution">
+            <button class="chip" data-value="720p">720p</button>
+            <button class="chip selected" data-value="1080p">1080p</button>
+            <button class="chip" data-value="original">Original</button>
+          </div>
+        </div>
+
+        <!-- Frame Rate -->
+        <div class="setting-group">
+          <label class="setting-label">Frame Rate</label>
+          <div class="setting-options" id="opt-fps">
+            <button class="chip" data-value="15">15 fps</button>
+            <button class="chip selected" data-value="30">30 fps</button>
+            <button class="chip" data-value="60">60 fps</button>
+          </div>
+        </div>
+
+        <!-- Quality -->
+        <div class="setting-group">
+          <label class="setting-label">Quality</label>
+          <div class="setting-options" id="opt-quality">
+            <button class="chip" data-value="low">Low</button>
+            <button class="chip" data-value="medium">Medium</button>
+            <button class="chip selected" data-value="high">High</button>
+            <button class="chip" data-value="ultra">Ultra</button>
+          </div>
+        </div>
+
+        <div class="setting-hint">
+          Higher settings produce sharper video but larger files.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
