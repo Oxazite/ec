@@ -327,7 +327,8 @@ function findOptimal(items, mode, ignoreIncompatibility = false, extraTimeMs = 0
                     anvilUses: res.resultUses,
                     isBook: target.isBook,
                     enchantments: res.resultEnchs,
-                    category: target.category
+                    category: target.category,
+                    invIndex: Math.min(target.invIndex ?? 999, sacrifice.invIndex ?? 999)
                 };
 
                 const step = {
@@ -349,7 +350,8 @@ function findOptimal(items, mode, ignoreIncompatibility = false, extraTimeMs = 0
                     enchCost: res.enchCost,
                     incompatCost: res.incompatCost,
                     resultUses: res.resultUses,
-                    resultEnchs: { ...res.resultEnchs }
+                    resultEnchs: { ...res.resultEnchs },
+                    sacrificeInvIndex: sacrifice.invIndex ?? 999
                 };
 
                 const next = [];
@@ -364,6 +366,20 @@ function findOptimal(items, mode, ignoreIncompatibility = false, extraTimeMs = 0
     }
 
     search(items, 0, 0, []);
+
+    // Tie-break equal-cost solutions by matching inventory placement order
+    if (bestSolutions.length > 1) {
+        bestSolutions.sort((a, b) => {
+            const orderA = a.steps.map(s => s.sacrificeInvIndex);
+            const orderB = b.steps.map(s => s.sacrificeInvIndex);
+            for (let k = 0; k < Math.max(orderA.length, orderB.length); k++) {
+                const valA = orderA[k] ?? 999;
+                const valB = orderB[k] ?? 999;
+                if (valA !== valB) return valA - valB;
+            }
+            return 0;
+        });
+    }
 
     // Attach metadata about search limits
     if (bestSolutions.length > 0) {
@@ -384,6 +400,7 @@ let nextId = 1;
 let currentMode = null;
 let allSolutions = [];
 let currentSolutionIndex = 0;
+let loadedProtocolsCount = 100;
 let currentIgnoredBooks = [];
 let currentExtraTimeMs = 0;
 
@@ -752,7 +769,8 @@ function calculate(isContinuation = false) {
             anvilUses: item.anvilUses,
             isBook: item.isBook,
             enchantments: { ...item.enchantments },
-            category: item.category
+            category: item.category,
+            invIndex: inventory.indexOf(item)
         };
     });
 
@@ -774,6 +792,7 @@ function calculate(isContinuation = false) {
         if (!solutions || solutions.length === 0) {
             allSolutions = [];
             currentSolutionIndex = 0;
+            loadedProtocolsCount = 100;
             emptyEl.classList.add('hidden');
             resultEl.classList.add('hidden');
             errorEl.classList.remove('hidden');
@@ -783,6 +802,7 @@ function calculate(isContinuation = false) {
 
         allSolutions = solutions;
         currentSolutionIndex = 0;
+        loadedProtocolsCount = 100;
         emptyEl.classList.add('hidden');
         errorEl.classList.add('hidden');
         resultEl.classList.remove('hidden');
@@ -886,19 +906,23 @@ function renderProtocol() {
     }).join('');
 
     let shuffleHtml = '';
+    const maxLoaded = Math.min(allSolutions.length, loadedProtocolsCount);
+
     if (allSolutions.length > 1) {
+        const hasMore = allSolutions.length > loadedProtocolsCount;
         shuffleHtml = `
             <div class="protocol-nav-bar">
                 <button class="btn-nav" title="Previous Protocol" onclick="changeProtocolIndex(-1)">◀</button>
                 <div class="protocol-nav-label">
                     Protocol
                     <input type="number" class="protocol-num-input" id="protocol-num-input"
-                        min="1" max="${allSolutions.length}" value="${currentSolutionIndex + 1}"
+                        min="1" max="${maxLoaded}" value="${currentSolutionIndex + 1}"
                         onchange="jumpToProtocol(this.value)"
                         onkeydown="if(event.key==='Enter') jumpToProtocol(this.value)">
-                    of ${allSolutions.length}
+                    of ${maxLoaded}${hasMore ? ` (${allSolutions.length} total)` : ''}
                 </div>
                 <button class="btn-nav" title="Next Protocol" onclick="changeProtocolIndex(1)">▶</button>
+                ${hasMore ? `<button class="btn-load-more" title="Load next 100 protocols" onclick="loadMoreProtocols()">+100 More</button>` : ''}
                 <button class="btn-random" title="Random Protocol" onclick="randomProtocol()">🔀 Random</button>
             </div>`;
     }
@@ -906,9 +930,22 @@ function renderProtocol() {
     stepsEl.innerHTML = stepsHtml + shuffleHtml;
 }
 
+function loadMoreProtocols() {
+    if (!allSolutions) return;
+    loadedProtocolsCount = Math.min(allSolutions.length, loadedProtocolsCount + 100);
+    renderProtocol();
+}
+
 function changeProtocolIndex(delta) {
     if (!allSolutions || allSolutions.length <= 1) return;
-    currentSolutionIndex = (currentSolutionIndex + delta + allSolutions.length) % allSolutions.length;
+    const maxLoaded = Math.min(allSolutions.length, loadedProtocolsCount);
+
+    let nextIndex = currentSolutionIndex + delta;
+    if (nextIndex >= maxLoaded && loadedProtocolsCount < allSolutions.length) {
+        loadedProtocolsCount = Math.min(allSolutions.length, loadedProtocolsCount + 100);
+    }
+    const newMaxLoaded = Math.min(allSolutions.length, loadedProtocolsCount);
+    currentSolutionIndex = (nextIndex + newMaxLoaded) % newMaxLoaded;
     renderProtocol();
 }
 
@@ -916,14 +953,19 @@ function jumpToProtocol(val) {
     if (!allSolutions || allSolutions.length <= 1) return;
     let num = parseInt(val, 10);
     if (isNaN(num)) num = 1;
-    num = Math.max(1, Math.min(allSolutions.length, num));
+    if (num > loadedProtocolsCount && num <= allSolutions.length) {
+        loadedProtocolsCount = Math.min(allSolutions.length, Math.ceil(num / 100) * 100);
+    }
+    const maxLoaded = Math.min(allSolutions.length, loadedProtocolsCount);
+    num = Math.max(1, Math.min(maxLoaded, num));
     currentSolutionIndex = num - 1;
     renderProtocol();
 }
 
 function randomProtocol() {
     if (!allSolutions || allSolutions.length <= 1) return;
-    currentSolutionIndex = Math.floor(Math.random() * allSolutions.length);
+    const maxLoaded = Math.min(allSolutions.length, loadedProtocolsCount);
+    currentSolutionIndex = Math.floor(Math.random() * maxLoaded);
     renderProtocol();
 }
 
