@@ -700,6 +700,20 @@ function toggleSearchDropdown(uid, enchId, event) {
         dropdown.classList.remove('hidden');
         if (trigger) trigger.classList.add('active');
         openDropdownId = dropdownId;
+
+        // Smart collision check: flip upward if near bottom edge of viewport
+        if (trigger) {
+            const triggerRect = trigger.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - triggerRect.bottom;
+            if (spaceBelow < 220 && triggerRect.top > 220) {
+                dropdown.style.top = 'auto';
+                dropdown.style.bottom = 'calc(100% + 4px)';
+            } else {
+                dropdown.style.top = 'calc(100% + 4px)';
+                dropdown.style.bottom = 'auto';
+            }
+        }
+
         const input = dropdown.querySelector('.searchable-select-input');
         if (input) {
             input.value = '';
