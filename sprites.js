@@ -58,6 +58,14 @@ function getAnvilIconHTML(size = 24) {
 }
 
 /**
+ * Returns authentic animated 3D Minecraft Enchanted Book icon HTML.
+ * Loads directly from the Minecraft Wiki (browsers are not blocked).
+ */
+function getEnchantedBookIconHTML(size = 32) {
+    return `<img src="${ENCHANTED_BOOK_WIKI_URL}" width="${size}" height="${size}" class="mc-sprite mc-enchanted-book-img" alt="Enchanted Book" crossorigin="anonymous" referrerpolicy="no-referrer" />`;
+}
+
+/**
  * Returns animated Minecraft XP Orb HTML.
  *
  * Creates a container with all 11 rendered XP orb images stacked on top
