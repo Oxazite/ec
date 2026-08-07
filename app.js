@@ -475,6 +475,11 @@ function addBook() {
         }
     }
 
+    if (!selectedEnch && !allowConflicts) {
+        showConflictWarning('No non-conflicting enchantments available for a new book. Turn on "Allow Conflicting Enchantments" on the left panel to add more books.');
+        return;
+    }
+
     const initialEnchs = {};
     if (selectedEnch) {
         initialEnchs[selectedEnch.id] = selectedEnch.maxLevel;
@@ -491,6 +496,18 @@ function addBook() {
     scrollToBottom();
 }
 
+function showConflictWarning(msg) {
+    const errorEl = document.getElementById('protocol-error');
+    const emptyEl = document.getElementById('protocol-empty');
+    const resultEl = document.getElementById('protocol-results');
+    if (errorEl) {
+        if (emptyEl) emptyEl.classList.add('hidden');
+        if (resultEl) resultEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        errorEl.innerHTML = `<div class="error-msg" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);margin-bottom:0.75rem;">⚠️ ${msg}</div>`;
+    }
+}
+
 function removeItem(uid) {
     inventory = inventory.filter(i => i.uid !== uid);
     renderInventory();
@@ -501,9 +518,15 @@ function addEnchantment(uid) {
     if (!item) return;
     // Find an enchantment not already on this item
     const available = getAvailableEnchantments(item);
-    if (available.length === 0) return;
+    if (available.length === 0) {
+        const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
+        if (!allowConflicts) {
+            showConflictWarning(`No non-conflicting enchantments available for this ${item.isBook ? 'book' : 'item'}. Turn on "Allow Conflicting Enchantments" on the left panel to add more enchantments.`);
+        }
+        return;
+    }
     const ench = available[0];
-    item.enchantments[ench.id] = 1;
+    item.enchantments[ench.id] = ench.maxLevel; // Max level automatically
     renderInventory();
 }
 
@@ -549,10 +572,9 @@ function updateItemUses(uid, val) {
 function updateEnchantId(uid, oldId, newId) {
     const item = inventory.find(i => i.uid === uid);
     if (!item) return;
-    const level = item.enchantments[oldId] || 1;
     delete item.enchantments[oldId];
     const info = ENCHANT_MAP.get(newId);
-    item.enchantments[newId] = Math.min(level, info ? info.maxLevel : 1);
+    item.enchantments[newId] = info ? info.maxLevel : 1; // Max level automatically
     renderInventory();
 }
 
@@ -591,14 +613,28 @@ function renderInventory() {
                 </div>`;
         }
 
-        // Anvil uses
+        // Prior Work Penalty row with help tooltip
         const usesRow = `
             <div class="item-card-row">
-                <label>Anvil Uses</label>
+                <label style="display:inline-flex;align-items:center;gap:0.35rem;">
+                    Prior Work Penalty
+                    <span class="pwp-help-tooltip-wrapper">
+                        <span class="pwp-help-icon" tabindex="0">❓</span>
+                        <span class="pwp-help-tooltip">
+                            <strong>Finding your item's Prior Work Penalty:</strong><br>
+                            Place your item in an anvil in-game and try renaming it (without adding enchantments):<br>
+                            • Cost <strong>1 level</strong> ➔ <strong>0 uses</strong> (PWP: 0)<br>
+                            • Cost <strong>2 levels</strong> ➔ <strong>1 use</strong> (PWP: 1)<br>
+                            • Cost <strong>4 levels</strong> ➔ <strong>2 uses</strong> (PWP: 3)<br>
+                            • Cost <strong>8 levels</strong> ➔ <strong>3 uses</strong> (PWP: 7)<br>
+                            • Cost <strong>16 levels</strong> ➔ <strong>4 uses</strong> (PWP: 15)<br>
+                            • Cost <strong>32 levels</strong> ➔ <strong>5 uses</strong> (PWP: 31)
+                        </span>
+                    </span>
+                </label>
                 <input type="number" class="uses-input" value="${item.anvilUses}" min="0" max="31"
                     onchange="updateItemUses(${item.uid}, this.value)"
                     onblur="updateItemUses(${item.uid}, this.value)">
-                <span style="font-size:0.7rem;color:var(--text-3);margin-left:0.2rem">PWP: ${getPWP(item.anvilUses)}</span>
             </div>`;
 
         // Enchantment rows

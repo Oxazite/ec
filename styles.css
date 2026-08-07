@@ -788,6 +788,59 @@ input[type="number"] { width: 60px; }
     color: #ffffff;
 }
 
+/* ── Tooltip Rules for Prior Work Penalty ─────── */
+.pwp-help-tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.pwp-help-icon {
+    font-size: 0.8rem;
+    cursor: help;
+    opacity: 0.75;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.pwp-help-icon:hover, .pwp-help-icon:focus {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.pwp-help-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: 260px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.85rem;
+    font-size: 0.73rem;
+    line-height: 1.5;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 999;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    font-weight: 400;
+}
+
+.pwp-help-tooltip strong {
+    color: var(--amber);
+}
+
+.pwp-help-tooltip-wrapper:hover .pwp-help-tooltip,
+.pwp-help-icon:focus + .pwp-help-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 .conflict-list {
     margin-top: 0.3rem;
     font-size: 0.75rem;
