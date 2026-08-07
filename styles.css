@@ -276,18 +276,18 @@ header p {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     vertical-align: middle;
     flex-shrink: 0;
     overflow: hidden;
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 .mc-sprite {
     display: block;
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
     flex-shrink: 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
@@ -305,8 +305,8 @@ header p {
     position: absolute;
     top: 1px;
     left: 1px;
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
     pointer-events: none;
     background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
     background-size: 250% 250%;

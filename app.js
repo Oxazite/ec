@@ -1332,7 +1332,7 @@ function randomProtocol() {
 document.addEventListener('DOMContentLoaded', () => {
     // Render authentic Minecraft header & mode icons
     const headerIcon = document.getElementById('header-book-icon') || document.getElementById('header-anvil-icon');
-    if (headerIcon) headerIcon.innerHTML = getEnchantedBookIconHTML(32);
+    if (headerIcon) headerIcon.innerHTML = getEnchantedBookIconHTML(42);
 
     const xpIcon = document.getElementById('xp-mode-icon');
     if (xpIcon) xpIcon.innerHTML = getXPOrbIconHTML(18);
