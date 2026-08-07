@@ -301,7 +301,7 @@ header p {
     image-rendering: crisp-edges;
 }
 
-/* Authentic Minecraft 1.21 Enchanted Glint Overlay — strictly masked to item/book shape */
+/* Authentic Minecraft 1.21 Enchanted Glint Overlay — subtle translucent sheen, keeping 100% original item details */
 .mc-icon-wrapper.is-enchanted .mc-glint-overlay {
     position: absolute;
     top: 0;
@@ -309,20 +309,12 @@ header p {
     width: 28px;
     height: 28px;
     pointer-events: none;
-    background-image: 
-        linear-gradient(
-            135deg,
-            rgba(147, 51, 234, 0) 0%,
-            rgba(192, 132, 252, 0.45) 30%,
-            rgba(232, 121, 249, 0.85) 50%,
-            rgba(192, 132, 252, 0.45) 70%,
-            rgba(147, 51, 234, 0) 100%
-        ),
-        url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
-    background-size: 250% 250%, 200% 200%;
-    animation: mc-glint-sweep 2.5s linear infinite;
+    background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
+    background-size: 200% 200%;
+    animation: mc-glint-anim 2.5s linear infinite;
     mix-blend-mode: screen;
-    opacity: 0.85;
+    filter: sepia(1) hue-rotate(240deg) saturate(4);
+    opacity: 0.35;
     -webkit-mask-image: var(--item-mask);
     mask-image: var(--item-mask);
     -webkit-mask-size: contain;
@@ -333,25 +325,9 @@ header p {
     mask-position: center;
 }
 
-@keyframes mc-glint-sweep {
-    0% {
-        background-position: -150% -150%, 0% 0%;
-    }
-    100% {
-        background-position: 150% 150%, 200% 200%;
-    }
-}
-
-/* Official Minecraft Animated Enchanted Book GIF glint overlay — FOR BOOKS ONLY (which the user loved!) */
-.mc-icon-wrapper.is-book-glint .mc-glint-overlay {
-    background-image: url('https://minecraft.wiki/images/Enchanted_Book.gif?b21c4');
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-    animation: none;
-    mix-blend-mode: screen;
-    opacity: 0.85;
-    filter: brightness(1.2) contrast(1.1);
+@keyframes mc-glint-anim {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 200%; }
 }
 
 .btn-remove-item {
