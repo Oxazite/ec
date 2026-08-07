@@ -342,6 +342,18 @@ header p {
     }
 }
 
+/* Official Minecraft Animated Enchanted Book GIF glint overlay — FOR BOOKS ONLY (which the user loved!) */
+.mc-icon-wrapper.is-book-glint .mc-glint-overlay {
+    background-image: url('https://minecraft.wiki/images/Enchanted_Book.gif?b21c4');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    animation: none;
+    mix-blend-mode: screen;
+    opacity: 0.85;
+    filter: brightness(1.2) contrast(1.1);
+}
+
 .btn-remove-item {
     width: 22px;
     height: 22px;

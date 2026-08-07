@@ -126,7 +126,7 @@ function getItemIconHTML(item) {
     const imgHtml = `<img src="${imgUrl}" class="mc-sprite mc-item-png" alt="${item.category || (isBook ? 'book' : 'item')}" onerror="this.src='${ITEM_PNG_URLS.book}'" />`;
 
     return `
-        <span class="mc-icon-wrapper ${isEnchanted ? 'is-enchanted' : ''}" style="--item-mask: url('${imgUrl}')">
+        <span class="mc-icon-wrapper ${isEnchanted ? 'is-enchanted' : ''} ${isBook ? 'is-book-glint' : ''}" style="--item-mask: url('${imgUrl}')">
             ${imgHtml}
             ${isEnchanted ? '<span class="mc-glint-overlay"></span>' : ''}
         </span>`;
