@@ -300,7 +300,7 @@ header p {
     image-rendering: crisp-edges;
 }
 
-/* Authentic Minecraft Enchanted Glint Overlay — strictly masked to item/book shape */
+/* Authentic Minecraft 1.21 Dual-Pass Enchanted Glint Overlay — strictly masked to item/book shape */
 .mc-icon-wrapper.is-enchanted .mc-glint-overlay {
     position: absolute;
     top: 0;
@@ -308,11 +308,20 @@ header p {
     width: 28px;
     height: 28px;
     pointer-events: none;
-    background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
-    background-size: 200% 200%;
-    animation: mc-glint-anim 2s linear infinite;
+    background-image: 
+        linear-gradient(
+            135deg,
+            rgba(126, 34, 206, 0) 0%,
+            rgba(168, 85, 247, 0.45) 25%,
+            rgba(232, 121, 249, 0.9) 50%,
+            rgba(168, 85, 247, 0.45) 75%,
+            rgba(126, 34, 206, 0) 100%
+        ),
+        url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
+    background-size: 300% 300%, 200% 200%;
+    animation: mc-glint-sweep 2.2s linear infinite;
     mix-blend-mode: screen;
-    filter: sepia(1) hue-rotate(240deg) saturate(5) brightness(1.1);
+    filter: brightness(1.2) contrast(1.1);
     opacity: 0.95;
     -webkit-mask-image: var(--item-mask);
     mask-image: var(--item-mask);
@@ -324,9 +333,13 @@ header p {
     mask-position: center;
 }
 
-@keyframes mc-glint-anim {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 200% 200%; }
+@keyframes mc-glint-sweep {
+    0% {
+        background-position: -150% -150%, 0% 0%;
+    }
+    100% {
+        background-position: 150% 150%, 200% 200%;
+    }
 }
 
 .btn-remove-item {
