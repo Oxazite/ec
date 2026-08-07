@@ -115,14 +115,21 @@ function getBookTextureURL(enchantments = {}) {
 }
 
 /**
- * Returns item or book icon wrapped in animated glint overlay (strictly masked to item shape)
+ * Returns item or book icon wrapped in animated glint overlay
  */
 function getItemIconHTML(item) {
     const enchs = item.enchantments || item.targetEnchs || {};
     const isEnchanted = Object.keys(enchs).length > 0;
 
-    const imgUrl = item.isBook ? getBookTextureURL(enchs) : (ITEM_PNG_URLS[item.category] || ITEM_PNG_URLS.sword);
-    const imgHtml = `<img src="${imgUrl}" class="mc-sprite mc-item-png" alt="${item.category || 'item'}" onerror="this.src='${ITEM_PNG_URLS.book}'" />`;
+    if (item.isBook || item.targetIsBook || item.sacrificeIsBook) {
+        return `
+            <span class="mc-icon-wrapper">
+                <img src="${ENCHANTED_BOOK_WIKI_URL}" class="mc-sprite mc-item-png" alt="Enchanted Book" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            </span>`;
+    }
+
+    const imgUrl = ITEM_PNG_URLS[item.category] || ITEM_PNG_URLS.sword;
+    const imgHtml = `<img src="${imgUrl}" class="mc-sprite mc-item-png" alt="${item.category || 'item'}" onerror="this.src='${ITEM_PNG_URLS.sword}'" />`;
 
     return `
         <span class="mc-icon-wrapper ${isEnchanted ? 'is-enchanted' : ''}" style="--item-mask: url('${imgUrl}')">
