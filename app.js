@@ -879,8 +879,11 @@ function renderInventory() {
                     <span class="pwp-help-tooltip-wrapper">
                         <span class="pwp-help-icon" tabindex="0">❓</span>
                         <span class="pwp-help-tooltip">
-                            <strong>Finding your item's Prior Work Penalty:</strong><br>
-                            Place your item in an anvil in-game and try renaming it (without adding enchantments):<br>
+                            <strong>What is Prior Work Penalty (PWP)?</strong><br>
+                            Each anvil operation doubles the extra XP penalty of future combines ($2^N - 1$).<br>
+                            <span style="color:#10b981;font-weight:600;">💡 Lower PWP = More future enchantments possible</span> before hitting the 40-level <em>"Too Expensive!"</em> cap.<br><br>
+                            <strong>Finding your item's PWP in-game:</strong><br>
+                            Put item in an anvil and rename it (without adding books):<br>
                             • Cost <strong>1 level</strong> ➔ <strong>0 uses</strong> (PWP: 0)<br>
                             • Cost <strong>2 – 3 levels</strong> ➔ <strong>1 use</strong> (PWP: 1)<br>
                             • Cost <strong>4 – 7 levels</strong> ➔ <strong>2 uses</strong> (PWP: 3)<br>
