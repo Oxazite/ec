@@ -625,6 +625,137 @@ function updateEnchantLevel(uid, enchId, level) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// UI: SEARCHABLE DROPDOWN COMPONENT
+// ══════════════════════════════════════════════════════════════
+
+let openDropdownId = null;
+
+function toggleSearchDropdown(uid, enchId, event) {
+    if (event) event.stopPropagation();
+    const dropdownId = `dropdown-${uid}-${enchId}`;
+    const dropdown = document.getElementById(dropdownId);
+    const trigger = document.getElementById(`trigger-${uid}-${enchId}`);
+
+    if (!dropdown) return;
+
+    // Close any previously open dropdown
+    if (openDropdownId && openDropdownId !== dropdownId) {
+        const prev = document.getElementById(openDropdownId);
+        if (prev) prev.classList.add('hidden');
+        const prevTrigger = document.getElementById(openDropdownId.replace('dropdown-', 'trigger-'));
+        if (prevTrigger) prevTrigger.classList.remove('active');
+    }
+
+    const isHidden = dropdown.classList.contains('hidden');
+    if (isHidden) {
+        dropdown.classList.remove('hidden');
+        if (trigger) trigger.classList.add('active');
+        openDropdownId = dropdownId;
+        const input = dropdown.querySelector('.searchable-select-input');
+        if (input) {
+            input.value = '';
+            filterSearchOptions(input, uid, enchId);
+            setTimeout(() => input.focus(), 20);
+        }
+    } else {
+        dropdown.classList.add('hidden');
+        if (trigger) trigger.classList.remove('active');
+        openDropdownId = null;
+    }
+}
+
+function filterSearchOptions(inputEl, uid, enchId) {
+    const q = inputEl.value.trim().toLowerCase();
+    const container = document.getElementById(`options-${uid}-${enchId}`);
+    if (!container) return;
+
+    const options = container.querySelectorAll('.searchable-option');
+    let hasVisible = false;
+
+    options.forEach(opt => {
+        const text = opt.textContent.toLowerCase();
+        if (!q || text.includes(q)) {
+            opt.style.display = 'block';
+            hasVisible = true;
+        } else {
+            opt.style.display = 'none';
+        }
+    });
+
+    let noMatch = container.querySelector('.no-match-option');
+    if (!hasVisible) {
+        if (!noMatch) {
+            noMatch = document.createElement('div');
+            noMatch.className = 'no-match-option';
+            noMatch.style.padding = '0.4rem 0.6rem';
+            noMatch.style.fontSize = '0.75rem';
+            noMatch.style.color = 'var(--text-3)';
+            noMatch.style.fontStyle = 'italic';
+            noMatch.textContent = 'No matching enchantments';
+            container.appendChild(noMatch);
+        }
+        noMatch.style.display = 'block';
+    } else if (noMatch) {
+        noMatch.style.display = 'none';
+    }
+}
+
+function handleSearchKeyDown(event, uid, enchId) {
+    const container = document.getElementById(`options-${uid}-${enchId}`);
+    if (!container) return;
+
+    const visibleOptions = Array.from(container.querySelectorAll('.searchable-option')).filter(opt => opt.style.display !== 'none');
+    if (visibleOptions.length === 0) return;
+
+    let highlighted = container.querySelector('.searchable-option.highlighted');
+    let idx = visibleOptions.indexOf(highlighted);
+
+    if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (highlighted) highlighted.classList.remove('highlighted');
+        idx = (idx + 1) % visibleOptions.length;
+        visibleOptions[idx].classList.add('highlighted');
+        visibleOptions[idx].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (highlighted) highlighted.classList.remove('highlighted');
+        idx = (idx - 1 + visibleOptions.length) % visibleOptions.length;
+        visibleOptions[idx].classList.add('highlighted');
+        visibleOptions[idx].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (highlighted) {
+            const val = highlighted.dataset.value;
+            selectSearchOption(uid, enchId, val);
+        } else if (visibleOptions.length > 0) {
+            const val = visibleOptions[0].dataset.value;
+            selectSearchOption(uid, enchId, val);
+        }
+    } else if (event.key === 'Escape') {
+        toggleSearchDropdown(uid, enchId);
+    }
+}
+
+function selectSearchOption(uid, oldEnchId, newEnchId) {
+    const dropdownId = `dropdown-${uid}-${oldEnchId}`;
+    const dropdown = document.getElementById(dropdownId);
+    if (dropdown) dropdown.classList.add('hidden');
+    openDropdownId = null;
+    updateEnchantId(uid, oldEnchId, newEnchId);
+}
+
+// Global click outside listener to close dropdowns
+document.addEventListener('click', (e) => {
+    if (openDropdownId && !e.target.closest('.searchable-select')) {
+        const prev = document.getElementById(openDropdownId);
+        if (prev) prev.classList.add('hidden');
+        const prevTrigger = document.getElementById(openDropdownId.replace('dropdown-', 'trigger-'));
+        if (prevTrigger) prevTrigger.classList.remove('active');
+        openDropdownId = null;
+    }
+});
+
+// ══════════════════════════════════════════════════════════════
 // UI: RENDER INVENTORY
 // ══════════════════════════════════════════════════════════════
 
@@ -712,11 +843,24 @@ function renderInventory() {
 
             return `
                 <div class="ench-row ${isConflicting ? 'conflict-row' : ''}">
-                    <select onchange="updateEnchantId(${item.uid}, '${enchId}', this.value)">
-                        ${allOptions.map(e =>
-                            `<option value="${e.id}" ${e.id === enchId ? 'selected' : ''}>${e.name}</option>`
-                        ).join('')}
-                    </select>
+                    <div class="searchable-select" id="select-wrap-${item.uid}-${enchId}">
+                        <div class="searchable-select-trigger" id="trigger-${item.uid}-${enchId}" onclick="toggleSearchDropdown(${item.uid}, '${enchId}', event)">
+                            <span>${info.name}</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="searchable-select-dropdown hidden" id="dropdown-${item.uid}-${enchId}" onclick="event.stopPropagation()">
+                            <input type="text" class="searchable-select-input" placeholder="Type to search..."
+                                oninput="filterSearchOptions(this, ${item.uid}, '${enchId}')"
+                                onkeydown="handleSearchKeyDown(event, ${item.uid}, '${enchId}')">
+                            <div class="searchable-select-options" id="options-${item.uid}-${enchId}">
+                                ${allOptions.map(e => `
+                                    <div class="searchable-option ${e.id === enchId ? 'selected' : ''}" data-value="${e.id}" onclick="selectSearchOption(${item.uid}, '${enchId}', '${e.id}')">
+                                        ${e.name}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
                     <select class="level-select" onchange="updateEnchantLevel(${item.uid}, '${enchId}', this.value)">
                         ${levelOptions}
                     </select>

@@ -874,6 +874,105 @@ input[type="number"] { width: 60px; }
     text-align: center;
 }
 
+/* ── Searchable Select Dropdown ───────────────── */
+.searchable-select {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.searchable-select-trigger {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    color: var(--text-1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.searchable-select-trigger:hover, .searchable-select-trigger.active {
+    border-color: var(--emerald);
+    background: var(--bg-hover);
+}
+
+.searchable-select-trigger .arrow {
+    font-size: 0.6rem;
+    color: var(--text-3);
+    transition: transform 0.15s ease;
+}
+
+.searchable-select-trigger.active .arrow {
+    transform: rotate(180deg);
+}
+
+.searchable-select-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #0f172a;
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-sm);
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+}
+
+.searchable-select-dropdown.hidden {
+    display: none !important;
+}
+
+.searchable-select-input {
+    width: 100%;
+    padding: 0.45rem 0.65rem;
+    background: var(--bg-input);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-1);
+    font-size: 0.78rem;
+    font-family: var(--font);
+    outline: none;
+}
+
+.searchable-select-input:focus {
+    border-bottom-color: var(--emerald);
+}
+
+.searchable-select-options {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 0.2rem 0;
+}
+
+.searchable-option {
+    padding: 0.38rem 0.65rem;
+    font-size: 0.78rem;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.searchable-option:hover, .searchable-option.highlighted {
+    background: var(--bg-hover);
+    color: var(--text-1);
+}
+
+.searchable-option.selected {
+    color: var(--emerald);
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.1);
+}
+
 .hidden { display: none !important; }
 
 /* ── Responsive ───────────────────────────────── */
