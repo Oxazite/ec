@@ -537,15 +537,43 @@ function removeEnchantment(uid, enchId) {
     renderInventory();
 }
 
+function getItemCardConflicts(item) {
+    const enchIds = Object.keys(item.enchantments);
+    const conflicts = [];
+    for (let i = 0; i < enchIds.length; i++) {
+        for (let j = i + 1; j < enchIds.length; j++) {
+            if (areIncompatible(enchIds[i], enchIds[j])) {
+                conflicts.push([enchIds[i], enchIds[j]]);
+            }
+        }
+    }
+    return conflicts;
+}
+
 function getAvailableEnchantments(item) {
+    const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
     let list;
     if (item.isBook) {
         // Books can have any enchantment
         list = ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments));
     } else {
-        // Items: filter by category
+        // Items: primary category enchantments not already on this item
         list = ENCHANTMENTS_DB.filter(e => e.cats.includes(item.category) && !(e.id in item.enchantments));
+
+        // If allowConflicts is ON and all category enchantments are added, fall back to any remaining unused enchantment
+        if (allowConflicts && list.length === 0) {
+            list = ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments));
+        }
     }
+
+    if (!allowConflicts) {
+        // Filter out enchantments that conflict with ANY enchantment currently on this item
+        const existingOnItem = Object.keys(item.enchantments);
+        list = list.filter(cand => {
+            return !existingOnItem.some(existId => areIncompatible(cand.id, existId));
+        });
+    }
+
     return list.sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -572,6 +600,18 @@ function updateItemUses(uid, val) {
 function updateEnchantId(uid, oldId, newId) {
     const item = inventory.find(i => i.uid === uid);
     if (!item) return;
+
+    const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
+    if (!allowConflicts) {
+        const existingOnItem = Object.keys(item.enchantments).filter(id => id !== oldId);
+        const hasConflict = existingOnItem.some(existId => areIncompatible(newId, existId));
+        if (hasConflict) {
+            showConflictWarning(`"${ENCHANT_MAP.get(newId)?.name}" conflicts with existing enchantments on this ${item.isBook ? 'book' : 'item'}. Turn on "Allow Conflicting Enchantments" on the left panel.`);
+            renderInventory();
+            return;
+        }
+    }
+
     delete item.enchantments[oldId];
     const info = ENCHANT_MAP.get(newId);
     item.enchantments[newId] = info ? info.maxLevel : 1; // Max level automatically
@@ -591,6 +631,8 @@ function updateEnchantLevel(uid, enchId, level) {
 function renderInventory() {
     const list = document.getElementById('inventory-list');
     const count = document.getElementById('item-count');
+    const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
+
     count.textContent = `${inventory.length} item${inventory.length !== 1 ? 's' : ''}`;
 
     list.innerHTML = inventory.map(item => {
@@ -598,6 +640,16 @@ function renderInventory() {
         const catInfo = isBook ? null : ITEM_CAT_MAP.get(item.category);
         const iconHTML = getItemIconHTML(item);
         const title = isBook ? 'Enchanted Book' : (catInfo ? catInfo.name : 'Item');
+
+        // Check for conflicting enchantments on this item
+        const conflicts = getItemCardConflicts(item);
+        const hasConflicts = conflicts.length > 0 && !allowConflicts;
+
+        let conflictBadgeHTML = '';
+        if (hasConflicts) {
+            const conflictNames = Array.from(new Set(conflicts.flat())).map(id => ENCHANT_MAP.get(id)?.name || id).join(', ');
+            conflictBadgeHTML = `<div class="item-conflict-badge">⚠️ Conflicting enchantments (${conflictNames}). Turn on "Allow Conflicting Enchantments" on the left panel to calculate.</div>`;
+        }
 
         // Category selector for items (not books)
         let catSelect = '';
@@ -646,6 +698,9 @@ function renderInventory() {
             if (!info) return '';
             const level = item.enchantments[enchId];
 
+            // Highlight conflicting rows when conflicts setting is OFF
+            const isConflicting = hasConflicts && conflicts.some(([a, b]) => a === enchId || b === enchId);
+
             // Build options: current ench + all available (sorted alphabetically)
             const otherAvailable = available.filter(e => e.id !== enchId);
             const allOptions = [info, ...otherAvailable].sort((a, b) => a.name.localeCompare(b.name));
@@ -656,7 +711,7 @@ function renderInventory() {
             }
 
             return `
-                <div class="ench-row">
+                <div class="ench-row ${isConflicting ? 'conflict-row' : ''}">
                     <select onchange="updateEnchantId(${item.uid}, '${enchId}', this.value)">
                         ${allOptions.map(e =>
                             `<option value="${e.id}" ${e.id === enchId ? 'selected' : ''}>${e.name}</option>`
@@ -670,6 +725,16 @@ function renderInventory() {
         }).join('');
 
         const canAdd = available.length > 0;
+        let addBtnHTML = '';
+        if (canAdd) {
+            addBtnHTML = `<button class="btn-add-ench" onclick="addEnchantment(${item.uid})">+ Add Enchantment</button>`;
+        } else {
+            if (!allowConflicts) {
+                addBtnHTML = `<div class="add-ench-status">No more non-conflicting enchantments available (turn on "Allow Conflicting Enchantments")</div>`;
+            } else {
+                addBtnHTML = `<div class="add-ench-status">All available enchantments added</div>`;
+            }
+        }
 
         return `
             <div class="item-card">
@@ -677,10 +742,11 @@ function renderInventory() {
                     <div class="item-card-title">${iconHTML} <span>${title}</span></div>
                     <button class="btn-remove-item" onclick="removeItem(${item.uid})" aria-label="Remove item">×</button>
                 </div>
+                ${conflictBadgeHTML}
                 ${catSelect}
                 ${usesRow}
                 ${enchRows}
-                ${canAdd ? `<button class="btn-add-ench" onclick="addEnchantment(${item.uid})">+ Add Enchantment</button>` : ''}
+                ${addBtnHTML}
             </div>`;
     }).join('');
 
@@ -731,6 +797,31 @@ function calculate(isContinuation = false) {
         errorEl.classList.remove('hidden');
         errorEl.innerHTML = `<div class="error-msg">Add at least one item (not a book) as the target to combine into.</div>`;
         return;
+    }
+
+    const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
+
+    // Check if any item in inventory contains conflicting enchantments when allowConflicts is false
+    if (!allowConflicts) {
+        const conflictingItems = [];
+        for (const item of inventory) {
+            const conflicts = getItemCardConflicts(item);
+            if (conflicts.length > 0) {
+                conflictingItems.push({ item, conflicts });
+            }
+        }
+        if (conflictingItems.length > 0) {
+            emptyEl.classList.add('hidden');
+            resultEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+            const details = conflictingItems.map(c => {
+                const name = c.item.isBook ? 'Book' : capitalize(c.item.category);
+                const enchNames = Array.from(new Set(c.conflicts.flat())).map(id => ENCHANT_MAP.get(id)?.name || id).join(', ');
+                return `${name} (${enchNames})`;
+            }).join('; ');
+            errorEl.innerHTML = `<div class="error-msg" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);">⚠️ Cannot calculate: ${details} contains conflicting enchantments. Remove the conflicting enchantments or turn on "Allow Conflicting Enchantments" on the left panel.</div>`;
+            return;
+        }
     }
 
     // Identify target categories from non-book items in inventory
@@ -1023,9 +1114,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('mode-xp').addEventListener('click', () => setMode('xp'));
     document.getElementById('mode-pwp').addEventListener('click', () => setMode('pwp'));
 
-    // Conflict toggle
+    // Conflict toggle: re-render inventory so available dropdowns and conflict badges update live!
     document.getElementById('toggle-conflicts').addEventListener('change', () => {
-        // Calculation requires clicking Min XP or Min PWP
+        renderInventory();
     });
 
     // Start with one sword and one book for convenience
