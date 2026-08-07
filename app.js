@@ -624,11 +624,11 @@ function renderInventory() {
                             <strong>Finding your item's Prior Work Penalty:</strong><br>
                             Place your item in an anvil in-game and try renaming it (without adding enchantments):<br>
                             • Cost <strong>1 level</strong> ➔ <strong>0 uses</strong> (PWP: 0)<br>
-                            • Cost <strong>2 levels</strong> ➔ <strong>1 use</strong> (PWP: 1)<br>
-                            • Cost <strong>4 levels</strong> ➔ <strong>2 uses</strong> (PWP: 3)<br>
-                            • Cost <strong>8 levels</strong> ➔ <strong>3 uses</strong> (PWP: 7)<br>
-                            • Cost <strong>16 levels</strong> ➔ <strong>4 uses</strong> (PWP: 15)<br>
-                            • Cost <strong>32 levels</strong> ➔ <strong>5 uses</strong> (PWP: 31)
+                            • Cost <strong>2 – 3 levels</strong> ➔ <strong>1 use</strong> (PWP: 1)<br>
+                            • Cost <strong>4 – 7 levels</strong> ➔ <strong>2 uses</strong> (PWP: 3)<br>
+                            • Cost <strong>8 – 15 levels</strong> ➔ <strong>3 uses</strong> (PWP: 7)<br>
+                            • Cost <strong>16 – 31 levels</strong> ➔ <strong>4 uses</strong> (PWP: 15)<br>
+                            • Cost <strong>32+ levels</strong> ➔ <strong>5+ uses</strong> (PWP: 31+)
                         </span>
                     </span>
                 </label>
