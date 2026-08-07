@@ -301,71 +301,32 @@ header p {
     image-rendering: crisp-edges;
 }
 
-/* Authentic Minecraft 1.21 Java Edition Dual-Pass Counter-Rotating Glint Shader */
-.mc-icon-wrapper.is-enchanted {
-    position: relative;
-    isolation: isolate;
-}
-
-/* Pass 1: +10deg diagonal sweep */
+/* Clean Minecraft Glint Overlay — strictly contained to icon dimensions */
 .mc-icon-wrapper.is-enchanted .mc-glint-overlay {
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 28px;
     pointer-events: none;
     background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
-    background-size: 64px 64px;
-    background-repeat: repeat;
-    transform: rotate(10deg);
-    animation: mc-glint-pass1 3.2s linear infinite;
-    mix-blend-mode: plus-lighter;
-    opacity: 0.55;
+    background-size: 200% 200%;
+    animation: mc-glint-anim 2.5s linear infinite;
+    mix-blend-mode: screen;
+    opacity: 0.35;
     -webkit-mask-image: var(--item-mask);
     mask-image: var(--item-mask);
-    -webkit-mask-size: 28px 28px;
-    mask-size: 28px 28px;
+    -webkit-mask-size: contain;
+    mask-size: contain;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     -webkit-mask-position: center;
     mask-position: center;
 }
 
-/* Pass 2: -10deg counter-rotating sweep (creates Minecraft's signature intersecting shimmer wave) */
-.mc-icon-wrapper.is-enchanted::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    pointer-events: none;
-    background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
-    background-size: 48px 48px;
-    background-repeat: repeat;
-    transform: rotate(-10deg);
-    animation: mc-glint-pass2 4.8s linear infinite;
-    mix-blend-mode: plus-lighter;
-    opacity: 0.45;
-    -webkit-mask-image: var(--item-mask);
-    mask-image: var(--item-mask);
-    -webkit-mask-size: 28px 28px;
-    mask-size: 28px 28px;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-}
-
-@keyframes mc-glint-pass1 {
-    0% { background-position: 0px 0px; }
-    100% { background-position: 128px 128px; }
-}
-
-@keyframes mc-glint-pass2 {
-    0% { background-position: 0px 0px; }
-    100% { background-position: -96px 96px; }
+@keyframes mc-glint-anim {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 200%; }
 }
 
 .btn-remove-item {
