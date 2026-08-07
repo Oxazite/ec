@@ -446,7 +446,7 @@ function addBook() {
         }
     }
 
-    // Find current gear item if any
+    // Find current target gear item if any
     const gearItem = inventory.find(i => !i.isBook);
     let selectedEnch = null;
 
@@ -461,10 +461,18 @@ function addBook() {
                 return !existingEnchIds.some(existId => areIncompatible(cand.id, existId));
             }) || null;
         }
-    }
 
-    // Fallback if no gear item or all gear category enchantments used: pick any unused enchantment
-    if (!selectedEnch) {
+        if (!selectedEnch) {
+            const catName = capitalize(gearItem.category);
+            if (!allowConflicts) {
+                showConflictWarning(`All non-conflicting enchantments for ${catName} have already been added as books. Turn on "Allow Conflicting Enchantments" on the left panel to add conflicting books.`);
+            } else {
+                showConflictWarning(`All available enchantments for ${catName} have already been added as books.`);
+            }
+            return;
+        }
+    } else {
+        // No gear item in inventory yet: pick any unused enchantment
         const candidates = ENCHANTMENTS_DB.filter(e => !usedEnchIds.has(e.id));
         if (allowConflicts) {
             selectedEnch = candidates[0] || null;
@@ -473,11 +481,15 @@ function addBook() {
                 return !existingEnchIds.some(existId => areIncompatible(cand.id, existId));
             }) || null;
         }
-    }
 
-    if (!selectedEnch && !allowConflicts) {
-        showConflictWarning('No non-conflicting enchantments available for a new book. Turn on "Allow Conflicting Enchantments" on the left panel to add more books.');
-        return;
+        if (!selectedEnch) {
+            if (!allowConflicts) {
+                showConflictWarning('No non-conflicting enchantments available for a new book. Turn on "Allow Conflicting Enchantments" on the left panel to add more books.');
+            } else {
+                showConflictWarning('All available enchantments in Minecraft 1.21 have already been added as books.');
+            }
+            return;
+        }
     }
 
     const initialEnchs = {};
