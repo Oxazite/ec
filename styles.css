@@ -301,7 +301,7 @@ header p {
     image-rendering: crisp-edges;
 }
 
-/* Untouched Authentic Minecraft 1.21 Java Edition Glint Overlay */
+/* Untouched Authentic Minecraft 1.21 Java Edition Animated Glint Overlay */
 .mc-icon-wrapper.is-enchanted .mc-glint-overlay {
     position: absolute;
     top: 0;
@@ -310,8 +310,9 @@ header p {
     height: 28px;
     pointer-events: none;
     background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
-    background-size: 100% 100%;
-    animation: mc-glint-anim 1.8s linear infinite;
+    background-size: 28px 28px;
+    background-repeat: repeat;
+    animation: mc-glint-anim 2s linear infinite;
     mix-blend-mode: screen;
     opacity: 0.45;
     -webkit-mask-image: var(--item-mask);
@@ -325,8 +326,8 @@ header p {
 }
 
 @keyframes mc-glint-anim {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 100% 100%; }
+    0% { background-position: 0px 0px; }
+    100% { background-position: 28px 28px; }
 }
 
 .btn-remove-item {
