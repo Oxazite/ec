@@ -301,7 +301,7 @@ header p {
     image-rendering: crisp-edges;
 }
 
-/* Authentic Minecraft 1.21 Java Edition Additive Enchanted Glint Shader */
+/* Clean Minecraft Glint Overlay — crisp, zero-distortion glint sheen */
 .mc-icon-wrapper.is-enchanted .mc-glint-overlay {
     position: absolute;
     top: 0;
@@ -311,10 +311,9 @@ header p {
     pointer-events: none;
     background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/misc/enchanted_glint_item.png');
     background-size: 200% 200%;
-    animation: mc-glint-anim 2.4s linear infinite;
+    animation: mc-glint-anim 2.5s linear infinite;
     mix-blend-mode: screen;
-    filter: drop-shadow(0 0 2px rgba(147, 51, 234, 0.75)) sepia(1) hue-rotate(245deg) saturate(3.5) brightness(1.25);
-    opacity: 0.55;
+    opacity: 0.3;
     -webkit-mask-image: var(--item-mask);
     mask-image: var(--item-mask);
     -webkit-mask-size: contain;
