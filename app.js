@@ -552,37 +552,65 @@ function removeEnchantment(uid, enchId) {
 function getItemCardConflicts(item) {
     const enchIds = Object.keys(item.enchantments);
     const conflicts = [];
+
+    // 1. Intra-item conflicts (on this item itself)
     for (let i = 0; i < enchIds.length; i++) {
         for (let j = i + 1; j < enchIds.length; j++) {
             if (areIncompatible(enchIds[i], enchIds[j])) {
-                conflicts.push([enchIds[i], enchIds[j]]);
+                conflicts.push({ type: 'self', enchA: enchIds[i], enchB: enchIds[j] });
             }
         }
     }
+
+    // 2. Inter-item conflicts (with OTHER items in inventory)
+    for (const otherItem of inventory) {
+        if (otherItem.uid === item.uid) continue;
+        for (const enchId of enchIds) {
+            for (const otherEnchId of Object.keys(otherItem.enchantments)) {
+                if (areIncompatible(enchId, otherEnchId)) {
+                    conflicts.push({
+                        type: 'other',
+                        enchA: enchId,
+                        enchB: otherEnchId,
+                        otherItem
+                    });
+                }
+            }
+        }
+    }
+
     return conflicts;
 }
 
-function getAvailableEnchantments(item) {
+function getAvailableEnchantments(item, currentEnchIdToReplace = null) {
     const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
     let list;
     if (item.isBook) {
         // Books can have any enchantment
-        list = ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments));
+        list = ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments) || e.id === currentEnchIdToReplace);
     } else {
         // Items: primary category enchantments not already on this item
-        list = ENCHANTMENTS_DB.filter(e => e.cats.includes(item.category) && !(e.id in item.enchantments));
+        list = ENCHANTMENTS_DB.filter(e => (e.cats.includes(item.category) && !(e.id in item.enchantments)) || e.id === currentEnchIdToReplace);
 
         // If allowConflicts is ON and all category enchantments are added, fall back to any remaining unused enchantment
         if (allowConflicts && list.length === 0) {
-            list = ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments));
+            list = ENCHANTMENTS_DB.filter(e => !(e.id in item.enchantments) || e.id === currentEnchIdToReplace);
         }
     }
 
     if (!allowConflicts) {
-        // Filter out enchantments that conflict with ANY enchantment currently on this item
-        const existingOnItem = Object.keys(item.enchantments);
+        // Collect ALL enchantment IDs present in the ENTIRE inventory across ALL items
+        const allInventoryEnchIds = [];
+        for (const invItem of inventory) {
+            for (const enchId of Object.keys(invItem.enchantments)) {
+                if (invItem.uid === item.uid && enchId === currentEnchIdToReplace) continue;
+                allInventoryEnchIds.push(enchId);
+            }
+        }
+
+        // Filter candidate list so it doesn't conflict with ANY enchantment in the entire inventory
         list = list.filter(cand => {
-            return !existingOnItem.some(existId => areIncompatible(cand.id, existId));
+            return !allInventoryEnchIds.some(existId => areIncompatible(cand.id, existId));
         });
     }
 
@@ -615,10 +643,19 @@ function updateEnchantId(uid, oldId, newId) {
 
     const allowConflicts = document.getElementById('toggle-conflicts')?.checked || false;
     if (!allowConflicts) {
-        const existingOnItem = Object.keys(item.enchantments).filter(id => id !== oldId);
-        const hasConflict = existingOnItem.some(existId => areIncompatible(newId, existId));
-        if (hasConflict) {
-            showConflictWarning(`"${ENCHANT_MAP.get(newId)?.name}" conflicts with existing enchantments on this ${item.isBook ? 'book' : 'item'}. Turn on "Allow Conflicting Enchantments" on the left panel.`);
+        // Check conflicts against ALL other enchantments in the ENTIRE inventory
+        const allInventoryEnchIds = [];
+        for (const invItem of inventory) {
+            for (const enchId of Object.keys(invItem.enchantments)) {
+                if (invItem.uid === item.uid && enchId === oldId) continue;
+                allInventoryEnchIds.push(enchId);
+            }
+        }
+        const conflictWith = allInventoryEnchIds.find(existId => areIncompatible(newId, existId));
+        if (conflictWith) {
+            const conflictName = ENCHANT_MAP.get(conflictWith)?.name || conflictWith;
+            const newName = ENCHANT_MAP.get(newId)?.name || newId;
+            showConflictWarning(`"${newName}" conflicts with "${conflictName}" in your inventory. Turn on "Allow Conflicting Enchantments" on the left panel.`);
             renderInventory();
             return;
         }
@@ -784,14 +821,23 @@ function renderInventory() {
         const iconHTML = getItemIconHTML(item);
         const title = isBook ? 'Enchanted Book' : (catInfo ? catInfo.name : 'Item');
 
-        // Check for conflicting enchantments on this item
+        // Check for conflicting enchantments on this item or with other items
         const conflicts = getItemCardConflicts(item);
         const hasConflicts = conflicts.length > 0 && !allowConflicts;
 
         let conflictBadgeHTML = '';
         if (hasConflicts) {
-            const conflictNames = Array.from(new Set(conflicts.flat())).map(id => ENCHANT_MAP.get(id)?.name || id).join(', ');
-            conflictBadgeHTML = `<div class="item-conflict-badge">⚠️ Conflicting enchantments (${conflictNames}). Turn on "Allow Conflicting Enchantments" on the left panel to calculate.</div>`;
+            const conflictMsgs = Array.from(new Set(conflicts.map(c => {
+                const nameA = ENCHANT_MAP.get(c.enchA)?.name || c.enchA;
+                const nameB = ENCHANT_MAP.get(c.enchB)?.name || c.enchB;
+                if (c.type === 'self') {
+                    return `${nameA} vs ${nameB}`;
+                } else {
+                    const otherName = c.otherItem.isBook ? 'Book' : capitalize(c.otherItem.category);
+                    return `${nameA} conflicts with ${nameB} on ${otherName}`;
+                }
+            }))).join('; ');
+            conflictBadgeHTML = `<div class="item-conflict-badge">⚠️ Conflicting enchantments (${conflictMsgs}). Turn on "Allow Conflicting Enchantments" on the left panel to calculate.</div>`;
         }
 
         // Category selector for items (not books)
@@ -842,7 +888,7 @@ function renderInventory() {
             const level = item.enchantments[enchId];
 
             // Highlight conflicting rows when conflicts setting is OFF
-            const isConflicting = hasConflicts && conflicts.some(([a, b]) => a === enchId || b === enchId);
+            const isConflicting = hasConflicts && conflicts.some(c => c.enchA === enchId || c.enchB === enchId);
 
             // Build options: current ench + all available (sorted alphabetically)
             const otherAvailable = available.filter(e => e.id !== enchId);
@@ -970,12 +1016,19 @@ function calculate(isContinuation = false) {
             emptyEl.classList.add('hidden');
             resultEl.classList.add('hidden');
             errorEl.classList.remove('hidden');
-            const details = conflictingItems.map(c => {
-                const name = c.item.isBook ? 'Book' : capitalize(c.item.category);
-                const enchNames = Array.from(new Set(c.conflicts.flat())).map(id => ENCHANT_MAP.get(id)?.name || id).join(', ');
-                return `${name} (${enchNames})`;
-            }).join('; ');
-            errorEl.innerHTML = `<div class="error-msg" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);">⚠️ Cannot calculate: ${details} contains conflicting enchantments. Remove the conflicting enchantments or turn on "Allow Conflicting Enchantments" on the left panel.</div>`;
+            const details = Array.from(new Set(conflictingItems.flatMap(c => c.conflicts.map(cnf => {
+                const nameA = ENCHANT_MAP.get(cnf.enchA)?.name || cnf.enchA;
+                const nameB = ENCHANT_MAP.get(cnf.enchB)?.name || cnf.enchB;
+                const itemAName = c.item.isBook ? 'Book' : capitalize(c.item.category);
+                if (cnf.type === 'self') {
+                    return `${itemAName} (${nameA} + ${nameB})`;
+                } else {
+                    const itemBName = cnf.otherItem.isBook ? 'Book' : capitalize(cnf.otherItem.category);
+                    return `${itemAName} (${nameA}) vs ${itemBName} (${nameB})`;
+                }
+            })))).join('; ');
+
+            errorEl.innerHTML = `<div class="error-msg" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);">⚠️ Cannot calculate: ${details} contains conflicting enchantments. Either remove conflicting enchantments or turn on "Allow Conflicting Enchantments" on the left panel.</div>`;
             return;
         }
     }
