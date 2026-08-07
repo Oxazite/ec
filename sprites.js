@@ -33,6 +33,9 @@ const ITEM_PNG_URLS = {
 // 3D rendered Anvil from Minecraft Wiki (browser can load directly)
 const ANVIL_WIKI_URL = "https://minecraft.wiki/images/Anvil_%28N%29_JE3.png?d438e";
 
+// Authentic animated 3D Enchanted Book directly from official Minecraft Wiki
+const ENCHANTED_BOOK_WIKI_URL = "https://minecraft.wiki/images/Enchanted_Book.gif?b21c4";
+
 // All 11 rendered Experience Orb value-tier images from Minecraft Wiki
 // These are the green glowing orbs seen in-game, not the raw texture atlas
 const XP_ORB_URLS = [
