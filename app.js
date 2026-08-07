@@ -618,14 +618,17 @@ function getAvailableEnchantments(item, currentEnchIdToReplace = null) {
 }
 
 function updateItemCategory(uid, newCat) {
-    const item = inventory.find(i => i.uid === uid);
-    if (!item) return;
-    item.category = newCat;
-    // Remove enchantments that don't apply to new category
-    for (const enchId of Object.keys(item.enchantments)) {
-        const info = ENCHANT_MAP.get(enchId);
-        if (info && !info.cats.includes(newCat)) {
-            delete item.enchantments[enchId];
+    // Synchronize ALL gear items in inventory to the new category
+    for (const item of inventory) {
+        if (!item.isBook) {
+            item.category = newCat;
+            // Remove enchantments that don't apply to new category
+            for (const enchId of Object.keys(item.enchantments)) {
+                const info = ENCHANT_MAP.get(enchId);
+                if (info && !info.cats.includes(newCat)) {
+                    delete item.enchantments[enchId];
+                }
+            }
         }
     }
     renderInventory();
@@ -1047,8 +1050,18 @@ function calculate(isContinuation = false) {
         }
     }
 
+    // Ensure there is EXACTLY 1 target item (gear item) to combine into
+    const gearItems = inventory.filter(i => !i.isBook);
+    if (gearItems.length > 1) {
+        emptyEl.classList.add('hidden');
+        resultEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        errorEl.innerHTML = `<div class="error-msg" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);">⚠️ You have ${gearItems.length} gear items in inventory (${capitalize(gearItems[0].category)}s). In Minecraft, an anvil combines books into <strong>one target item</strong>. Please remove extra gear items or combine books into one target item at a time.</div>`;
+        return;
+    }
+
     // Identify target categories from non-book items in inventory
-    const targetCats = new Set(inventory.filter(i => !i.isBook).map(i => i.category));
+    const targetCats = new Set(gearItems.map(i => i.category));
 
     // Filter items and detect completely useless books
     const ignoredBooks = [];
