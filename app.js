@@ -1053,14 +1053,18 @@ function calculate(isContinuation = false) {
         }
     }
 
-    // Ensure there is EXACTLY 1 target item (gear item) to combine into
+    // Validate gear items in inventory: allow multiple gear items as long as they are of the SAME category
     const gearItems = inventory.filter(i => !i.isBook);
     if (gearItems.length > 1) {
-        emptyEl.classList.add('hidden');
-        resultEl.classList.add('hidden');
-        errorEl.classList.remove('hidden');
-        errorEl.innerHTML = `<div class="error-msg" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);">⚠️ You have ${gearItems.length} gear items in inventory (${capitalize(gearItems[0].category)}s). In Minecraft, an anvil combines books into <strong>one target item</strong>. Please remove extra gear items or combine books into one target item at a time.</div>`;
-        return;
+        const firstCat = gearItems[0].category;
+        const diffItem = gearItems.find(i => i.category !== firstCat);
+        if (diffItem) {
+            emptyEl.classList.add('hidden');
+            resultEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+            errorEl.innerHTML = `<div class="error-msg" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:var(--red);">⚠️ Cannot combine gear items of different types (${capitalize(firstCat)} and ${capitalize(diffItem.category)}). All gear items in inventory must be of the <strong>same item type</strong> to be combined together.</div>`;
+            return;
+        }
     }
 
     // Identify target categories from non-book items in inventory
